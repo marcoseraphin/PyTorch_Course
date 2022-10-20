@@ -120,7 +120,6 @@ print (f"tensor_x ArgMin Index of Minimum => {tensor_x.argmin()}")
 print (f"tensor_x ArgMax Index of Minimum => {tensor_x.argmax()}")
 
 # Reshaping, stacking, squeezing and unsqueezing tensors
-
 tensor_y = torch.tensor([12, 32, 56, 78, 99, 13])
 print (f"tensor_y => {tensor_y}")
 print (f"tensor_x Shape => {tensor_y.shape}")
