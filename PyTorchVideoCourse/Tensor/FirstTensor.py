@@ -150,3 +150,5 @@ tensor_p1 = torch.randn([3,224,244])
 print (f"Berfore Permute tensor_p1 => {tensor_p1.size()}")
 tensor_p2 = tensor_p1.permute(1,2,0)
 print (f"After Permute tensor_p1 => {tensor_p2.size()}")
+
+#end
