@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import sklearn
 import matplotlib.pyplot as plt
+import numpy as np
 
 # Introduction to Tensor
 # Creating a Tensor => https://pytorch.org/docs/stable/tensors.html 
@@ -151,4 +152,53 @@ print (f"Berfore Permute tensor_p1 => {tensor_p1.size()}")
 tensor_p2 = tensor_p1.permute(1,2,0)
 print (f"After Permute tensor_p1 => {tensor_p2.size()}")
 
-#end
+# Indexing  (selecting data from a tensor)
+tensor_index = torch.arange(1, 10).reshape(1,3,3)
+print (f"tensor_index       => {tensor_index}")
+print (f"tensor_index Shape => {tensor_index.shape}")
+print (f"tensor_index [0,1] => {tensor_index[0,1]}")
+print (f"tensor_index [0,1,2] => {tensor_index[0,1,2]}")
+print (f"tensor_index [:,1] => {tensor_index[:,1]}") # all of first dimension
+print (f"tensor_index [:,:,1] => {tensor_index[:,:,1]}") 
+
+# Numpy array to tensor
+np_array = np.arange(1.0, 8.0)
+tensor_np = torch.from_numpy(np_array)
+print (f"Numpy np_array     => {np_array}")
+print (f"tensor_np          => {tensor_np}")
+
+# Reproducibility (taking random out of random)
+
+rand_tensor = torch.randn(3,3)
+print (f"rand_tensor => {rand_tensor}")
+
+RANDOM_SEED = 42
+
+torch.manual_seed(RANDOM_SEED)
+rand_tensor_seed1 = torch.randn(3,3)
+print (f"rand_tensor_seed1 => {rand_tensor_seed1}")
+
+torch.manual_seed(RANDOM_SEED)
+rand_tensor_seed2 = torch.randn(3,3)
+print (f"rand_tensor_seed2 => {rand_tensor_seed2}")
+print (f"Equal =>  {rand_tensor_seed1 == rand_tensor_seed2}")
+
+# Running tensor and PyTorch on GPUs
+# Puttin tensors (and models) on the GPU => Faster
+mps_device = "mps" if torch.backends.mps.is_available() else "cpu"
+print(f"Using device: {mps_device}")
+
+tensor_CPU = torch.tensor([1, 2, 3], device="cpu")
+print (f"tensor_CPU Device => {tensor_CPU.device}")
+
+tensor_GPU = torch.tensor([1, 2, 3], device="mps")
+print (f"tensor_GPU        => {tensor_GPU}")
+print (f"tensor_GPU Device => {tensor_GPU.device}")
+
+tensor_GPU2 = tensor_CPU.to(mps_device)   # move tensor to GPU (Apple Metal Performance Shader = mps)
+print (f"tensor_GPU2        => {tensor_GPU2}")
+print (f"tensor_GPU2 Device => {tensor_GPU2.device}")
+
+tensor_back_cpu = tensor_GPU2.cpu()
+print (f"tensor_back_cpu        => {tensor_back_cpu}")
+print (f"tensor_back_cpu Device => {tensor_back_cpu.device}")
