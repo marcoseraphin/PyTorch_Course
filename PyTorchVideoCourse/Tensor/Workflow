@@ -102,12 +102,14 @@ print(f"LinearRegressionModel parameters => {model_0.state_dict()} ")
 
 # Making predictions using torch.inference_mode()
 
-with torch.inference_mode():
+with torch.inference_mode(): # NO gradient descent with inference mode for making predictions
     y_preds = model_0(X_test)
 
 print(f"y_preds => {y_preds} ")
 
 plot_predictions(predictions=y_preds)
 plt.show()
+
+# 3. Train model
 
 
