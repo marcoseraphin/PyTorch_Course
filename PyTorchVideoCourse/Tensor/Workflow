@@ -68,6 +68,30 @@ def plot_predictions(train_data=X_train,
 plot_predictions()
 plt.show()
 
+# 2. Build model
+
+# start with random values (weight and bias)
+# look at training data and adjust the random values to better represent the ideal values
+# weight and bias values with we created the values
+
+# Using two main algorithms
+# 1. Gradient descent
+# 2. back propagation
+
+class LinearRegressionModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.weight = nn.Parameter(torch.randn(1,requires_grad=True,
+                                                   dtype=torch.float))
+
+        self.bias = nn.Parameter(torch.randn(1, requires_grad=True,
+                                                dtype=float))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.weights * x + self.bias  # linear regression formula
+
+
+
 
 
 
