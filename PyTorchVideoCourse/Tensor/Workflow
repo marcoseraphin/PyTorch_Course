@@ -65,8 +65,8 @@ def plot_predictions(train_data=X_train,
     # Show legend
     plt.legend(prop={"size" : 14});
 
-plot_predictions()
-plt.show()
+#plot_predictions()
+#plt.show()
 
 # 2. Build model
 
@@ -82,17 +82,32 @@ class LinearRegressionModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.weight = nn.Parameter(torch.randn(1,requires_grad=True,
-                                                   dtype=torch.float))
+                                                 dtype=torch.float))
 
         self.bias = nn.Parameter(torch.randn(1, requires_grad=True,
-                                                dtype=float))
+                                                dtype=torch.float))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.weights * x + self.bias  # linear regression formula
+        return self.weight * x + self.bias  # linear regression formula
 
+# Create a random seed
+torch.manual_seed(42)
 
+# Create an instance of the model
+model_0 = LinearRegressionModel()
 
+# Print out the parameters
+print(f"LinearRegressionModel parameters => {list(model_0.parameters())} ")
+print(f"LinearRegressionModel parameters => {model_0.state_dict()} ")
 
+# Making predictions using torch.inference_mode()
 
+with torch.inference_mode():
+    y_preds = model_0(X_test)
+
+print(f"y_preds => {y_preds} ")
+
+plot_predictions(predictions=y_preds)
+plt.show()
 
 
