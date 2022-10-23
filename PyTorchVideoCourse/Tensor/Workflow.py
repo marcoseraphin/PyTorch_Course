@@ -107,9 +107,57 @@ with torch.inference_mode(): # NO gradient descent with inference mode for makin
 
 print(f"y_preds => {y_preds} ")
 
-plot_predictions(predictions=y_preds)
-plt.show()
+#plot_predictions(predictions=y_preds)
+#plt.show()
 
 # 3. Train model
+
+# Setup a loss function
+loss_fn = nn.L1Loss()
+
+# Setup an optimizer (stochastic gradient descent)
+optimizer = torch.optim.SGD(model_0.parameters(),
+                            lr=0.01) # learning rate
+
+# Building a training loop (and a testing loop)
+epochs = 100  # 100 loop thru the data
+
+# loop thru the data
+for epoch in range(epochs):
+
+    # Set the model to training mode
+    model_0.train() # train mode in PytTorch sets all parameters that require gradients to gradients
+
+    # Forward pass the data thru the model
+    y_pred = model_0(X_train)
+
+    # Calculate the loss (compare predictions with train target data)
+    loss = loss_fn(y_pred, y_train)
+    print(f"Loss value = {loss}")
+
+    #  Optimizer zero grad (reset optimizer value )
+    optimizer.zero_grad() 
+
+    # Perform backpropagation on the loss with respect to the paramters of the model
+    loss.backward()
+
+    # Step the optimizer (perform gradient descent)
+    optimizer.step()
+
+    model_0.eval() # turns off gradient tracking
+    #print(f"LinearRegressionModel parameters => {model_0.state_dict()} ")
+
+
+with torch.inference_mode(): # NO gradient descent with inference mode for making predictions
+    y_preds_after_learning = model_0(X_test)
+
+print(f"y_preds => {y_preds_after_learning} ")
+
+plot_predictions(predictions=y_preds_after_learning)
+plt.show()
+
+print(f"Ready")
+
+
 
 
