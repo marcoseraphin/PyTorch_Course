@@ -3,6 +3,7 @@ from pickle import NONE
 import torch
 from torch import nn # nn contains all of PyTorch's building blocks for neural networks
 import matplotlib.pyplot as plt
+import numpy as np
 
 print(f"PyTorch Version {torch.__version__}")
 
@@ -107,8 +108,8 @@ with torch.inference_mode(): # NO gradient descent with inference mode for makin
 
 print(f"y_preds => {y_preds} ")
 
-#plot_predictions(predictions=y_preds)
-#plt.show()
+plot_predictions(predictions=y_preds)
+plt.show()
 
 # 3. Train model
 
@@ -120,7 +121,12 @@ optimizer = torch.optim.SGD(model_0.parameters(),
                             lr=0.01) # learning rate
 
 # Building a training loop (and a testing loop)
-epochs = 100  # 100 loop thru the data
+epochs = 300  # 300 loop thru the data
+
+# Tracking different learning values
+epoch_count = []
+loss_values = []
+test_loss_values = []
 
 # loop thru the data
 for epoch in range(epochs):
@@ -133,7 +139,7 @@ for epoch in range(epochs):
 
     # Calculate the loss (compare predictions with train target data)
     loss = loss_fn(y_pred, y_train)
-    print(f"Loss value = {loss}")
+    #print(f"Loss value = {loss}")
 
     #  Optimizer zero grad (reset optimizer value )
     optimizer.zero_grad() 
@@ -144,9 +150,46 @@ for epoch in range(epochs):
     # Step the optimizer (perform gradient descent)
     optimizer.step()
 
-    model_0.eval() # turns off gradient tracking
-    #print(f"LinearRegressionModel parameters => {model_0.state_dict()} ")
+    # Testing 
+    model_0.eval() 
+    with torch.inference_mode():  # turns off gradient tracking
+        # Forward pass test data
+        test_pred = model_0(X_test)
 
+        # Calculate the test loss
+        test_loss = loss_fn(test_pred, y_test)
+    
+    if epoch % 10 == 0:
+        epoch_count.append(epoch)
+        loss_values.append(loss)
+        test_loss_values.append(test_loss_values)
+
+        print(f"Epoch: {epoch} | Loss: {loss} | Test loss: {test_loss}")
+
+
+#print(f"LinearRegressionModel parameters => {model_0.state_dict()} ")
+
+# Plot the loss curves
+#plt.plot(epoch_count, np.array(torch.tensor(loss_values).numpy()), label="Train loss")
+#plt.plot(epoch_count, test_loss_values, label="Test loss")
+#plt.title("Training and Testing loss curves")
+#plt.ylabel("Loss")
+#plt.xlabel("Epochs")
+#plt.legend()
+#plt.show()
+
+def plot_learning_curves(epoch_count=epoch_count,
+                         loss_values=loss_values,
+                         test_loss_values=test_loss_values):
+    plt.plot(epoch_count, np.array(torch.tensor(loss_values).numpy()), label="Train loss")
+    #plt.plot(epoch_count, np.array(torch.tensor(test_loss_values).numpy()), label="Test loss")
+    plt.title("Training and Testing loss curves")
+    plt.ylabel("Loss")
+    plt.xlabel("Epochs")
+    plt.legend();
+
+plot_learning_curves()
+plt.show()
 
 with torch.inference_mode(): # NO gradient descent with inference mode for making predictions
     y_preds_after_learning = model_0(X_test)
