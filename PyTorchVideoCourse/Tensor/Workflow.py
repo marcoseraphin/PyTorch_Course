@@ -1,9 +1,12 @@
 from cProfile import label
 from pickle import NONE
+from pyexpat import model
+from turtle import forward
 import torch
 from torch import nn # nn contains all of PyTorch's building blocks for neural networks
 import matplotlib.pyplot as plt
 import numpy as np
+from pathlib import Path
 
 print(f"PyTorch Version {torch.__version__}")
 
@@ -108,8 +111,8 @@ with torch.inference_mode(): # NO gradient descent with inference mode for makin
 
 print(f"y_preds => {y_preds} ")
 
-plot_predictions(predictions=y_preds)
-plt.show()
+#plot_predictions(predictions=y_preds)
+#plt.show()
 
 # 3. Train model
 
@@ -188,16 +191,124 @@ def plot_learning_curves(epoch_count=epoch_count,
     plt.xlabel("Epochs")
     plt.legend();
 
-plot_learning_curves()
-plt.show()
+#plot_learning_curves()
+#plt.show()
 
 with torch.inference_mode(): # NO gradient descent with inference mode for making predictions
     y_preds_after_learning = model_0(X_test)
 
 print(f"y_preds => {y_preds_after_learning} ")
 
-plot_predictions(predictions=y_preds_after_learning)
-plt.show()
+#plot_predictions(predictions=y_preds_after_learning)
+#plt.show()
+
+# Saving a model 
+
+# Create model directory
+MODEL_PATH = Path("savedmodels")
+MODEL_PATH.mkdir(parents=True, exist_ok=True)
+
+# Create a model save path
+MODEL_NAME = "01_pytorch_workflow_model_0.pth"
+MODEL_SAVE_PATH = MODEL_PATH / MODEL_NAME
+print(f"Saving the model to MODEL_SAVE_PATH = {MODEL_SAVE_PATH}")
+
+torch.save(obj=model_0.state_dict(), f=MODEL_SAVE_PATH)
+
+# Load model
+# New instance of the model class and load the state_dict of the saved model 
+loaded_model_0 = LinearRegressionModel()
+loaded_model_0.load_state_dict(torch.load(f=MODEL_SAVE_PATH))
+
+print(f"Loading state_dict from saved model = {loaded_model_0.state_dict()}")
+
+# Make some predictions on the loaded model
+model_0.eval()
+with torch.inference_mode():
+    orig_model_preds = model_0(X_test)
+
+loaded_model_0.eval()
+with torch.inference_mode():
+    load_model_preds = loaded_model_0(X_test)
+
+print(f"Compare model_0 preds with loaded_model_0 preds => {orig_model_preds == load_model_preds}")
+
+# Linear regression
+# Create a model without settings weight and bias parameter manually
+# Use nn.Linear() as Layer
+class LinearRegressionModel_V2(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.linear_layer = nn.Linear(in_features=1,
+                                     out_features=1)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.linear_layer(x)
+
+# Create a random seed
+torch.manual_seed(42)
+
+# Create an instance of the linear regression layer model
+# =======================================================
+model_1 = LinearRegressionModel_V2()
+print(f"Linear layer with LinearRegressionModel_V2 = {model_1}")
+print(f"Linear layer with LinearRegressionModel_V2 state_dict() = {model_1.state_dict()}")
+
+# Set the model to use the target device MPS (GPU)
+# Set the device      
+device = "mps" if torch.backends.mps.is_available() else "cpu"
+print(f"Using device: {device}")
+
+model_1.to(device) # move the model to the GPU
+print(f"Model 1 uses GPU (MPS) now: {next(model_1.parameters()).device}")
+
+loss_fn1 = nn.L1Loss()
+optimizer1 = torch.optim.SGD(params=model_1.parameters(),
+                             lr=0.01)
+
+epochs1 = 400
+
+# Move the data to the GPU
+X_train = X_train.to(device)
+y_train = y_train.to(device)
+X_test = X_test.to(device)
+y_test = y_test.to(device)
+
+# loop thru the data
+for epoch1 in range(epochs1):
+
+    # Set the model to training mode
+    model_1.train() # train mode in PytTorch sets all parameters that require gradients to gradients
+
+    # Forward pass the data thru the model
+    y_pred1 = model_1(X_train)
+
+    # Calculate the loss (compare predictions with train target data)
+    loss1 = loss_fn1(y_pred1, y_train)
+    #print(f"Loss value = {loss}")
+
+    #  Optimizer zero grad (reset optimizer value )
+    optimizer.zero_grad() 
+
+    # Perform backpropagation on the loss with respect to the paramters of the model
+    loss1.backward()
+
+    # Step the optimizer (perform gradient descent)
+    optimizer.step()
+
+    # Testing 
+    model_1.eval() 
+    with torch.inference_mode():  # turns off gradient tracking
+        # Forward pass test data
+        test_pred1 = model_1(X_test)
+
+        # Calculate the test loss
+        test_loss1 = loss_fn1(test_pred1, y_test)
+    
+    if epoch1 % 10 == 0:
+        print(f"Epoch: {epoch1} | Loss: {loss1} | Test loss: {test_loss1}")
+
+
 
 print(f"Ready")
 
