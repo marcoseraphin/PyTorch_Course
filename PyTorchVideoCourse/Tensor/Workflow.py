@@ -3,7 +3,7 @@ from pickle import NONE
 from pyexpat import model
 from turtle import forward
 import torch
-from torch import nn # nn contains all of PyTorch's building blocks for neural networks
+from torch import Tensor, nn # nn contains all of PyTorch's building blocks for neural networks
 import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
@@ -266,7 +266,7 @@ loss_fn1 = nn.L1Loss()
 optimizer1 = torch.optim.SGD(params=model_1.parameters(),
                              lr=0.01)
 
-epochs1 = 400
+epochs1 = 300
 
 # Move the data to the GPU
 X_train = X_train.to(device)
@@ -288,13 +288,13 @@ for epoch1 in range(epochs1):
     #print(f"Loss value = {loss}")
 
     #  Optimizer zero grad (reset optimizer value )
-    optimizer.zero_grad() 
+    optimizer1.zero_grad() 
 
     # Perform backpropagation on the loss with respect to the paramters of the model
     loss1.backward()
 
     # Step the optimizer (perform gradient descent)
-    optimizer.step()
+    optimizer1.step()
 
     # Testing 
     model_1.eval() 
@@ -308,6 +308,8 @@ for epoch1 in range(epochs1):
     if epoch1 % 10 == 0:
         print(f"Epoch: {epoch1} | Loss: {loss1} | Test loss: {test_loss1}")
 
+
+print(f"Print LinearRegressionModel_V2 after learning = {model_1.state_dict()}")
 
 
 print(f"Ready")
