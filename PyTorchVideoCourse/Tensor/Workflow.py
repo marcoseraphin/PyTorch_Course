@@ -312,6 +312,17 @@ for epoch1 in range(epochs1):
 print(f"Print LinearRegressionModel_V2 after learning = {model_1.state_dict()}")
 
 
+model_1.eval()
+
+with torch.inference_mode():
+    y_pred = model_1(X_test)
+
+print(f"y_preds => {y_preds} ")
+
+plot_predictions(predictions=y_pred.cpu())
+plt.show()
+
+
 print(f"Ready")
 
 
