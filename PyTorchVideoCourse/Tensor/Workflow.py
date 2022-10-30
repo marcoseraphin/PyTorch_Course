@@ -69,8 +69,8 @@ def plot_predictions(train_data=X_train,
     # Show legend
     plt.legend(prop={"size" : 14});
 
-#plot_predictions()
-#plt.show()
+plot_predictions()
+plt.show()
 
 # 2. Build model
 
@@ -111,8 +111,8 @@ with torch.inference_mode(): # NO gradient descent with inference mode for makin
 
 print(f"y_preds => {y_preds} ")
 
-#plot_predictions(predictions=y_preds)
-#plt.show()
+plot_predictions(predictions=y_preds)
+plt.show()
 
 # 3. Train model
 
@@ -191,16 +191,16 @@ def plot_learning_curves(epoch_count=epoch_count,
     plt.xlabel("Epochs")
     plt.legend();
 
-#plot_learning_curves()
-#plt.show()
+plot_learning_curves()
+plt.show()
 
 with torch.inference_mode(): # NO gradient descent with inference mode for making predictions
     y_preds_after_learning = model_0(X_test)
 
 print(f"y_preds => {y_preds_after_learning} ")
 
-#plot_predictions(predictions=y_preds_after_learning)
-#plt.show()
+plot_predictions(predictions=y_preds_after_learning)
+plt.show()
 
 # Saving a model 
 
