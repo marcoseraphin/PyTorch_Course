@@ -1,3 +1,4 @@
+from turtle import forward
 import torch
 import sklearn
 from torch import Tensor, nn # nn contains all of PyTorch's building blocks for neural networks
@@ -52,3 +53,41 @@ X_train, X_test, y_train, y_test = train_test_split(X,
 
 print(f"Length of X_train => {len(X_train)}")
 print(f"Length of X_test  => {len(X_test)}")
+
+# Build a model to classify the blue and red dots
+
+# Set the model to use the target device MPS (GPU)
+# Set the device      
+device = "mps" if torch.backends.mps.is_available() else "cpu"
+print(f"Using device: {device}")
+
+class CircleModelv1(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.layer_1 = nn.Linear(in_features=2, out_features=5) # takes in 2 input features and upscales to 5 output features
+        self.layer_2 = nn.Linear(in_features=5, out_features=1) # input 5 input features and 1 output features
+
+    def forward(self, x):
+        return self.layer_2(self.layer_1(x)) # pass data thru layer 1 and than layer 2
+
+model_0 = CircleModelv1().to(device=device)
+
+print(f"CircleModelv1 model_0 => {model_0}")
+print(f"Device of CircleModelv1 model_0 => {next(model_0.parameters()).device}")
+
+# using nn.Sequential()
+model_0 = nn.Sequential(nn.Linear(in_features=2, out_features=5),
+                        nn.Linear(in_features=5, out_features=1).to(device=device))
+
+print(f"Sequential CircleModelv1 model_0 => {model_0}")
+
+# Make predictions
+print(f"State Dict of CircleModelv1 model_0 => {model_0.state_dict()}")
+
+model_0.to(device=device)
+
+with torch.inference_mode():
+    untrained_preds = model_0(X_test.to(device))
+    print(f"Lenght of untrained_preds of CircleModelv1 model_0 => {len(untrained_preds)}")
+
+
