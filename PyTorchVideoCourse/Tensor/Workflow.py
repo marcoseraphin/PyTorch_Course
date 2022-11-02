@@ -165,7 +165,7 @@ for epoch in range(epochs):
     if epoch % 10 == 0:
         epoch_count.append(epoch)
         loss_values.append(loss)
-        test_loss_values.append(test_loss_values)
+        test_loss_values.append(test_loss)
 
         print(f"Epoch: {epoch} | Loss: {loss} | Test loss: {test_loss}")
 
@@ -185,7 +185,7 @@ def plot_learning_curves(epoch_count=epoch_count,
                          loss_values=loss_values,
                          test_loss_values=test_loss_values):
     plt.plot(epoch_count, np.array(torch.tensor(loss_values).numpy()), label="Train loss")
-    #plt.plot(epoch_count, np.array(torch.tensor(test_loss_values).numpy()), label="Test loss")
+    plt.plot(epoch_count, np.array(torch.tensor(test_loss_values).numpy()), label="Test loss")
     plt.title("Training and Testing loss curves")
     plt.ylabel("Loss")
     plt.xlabel("Epochs")
