@@ -88,6 +88,6 @@ model_0.to(device=device)
 
 with torch.inference_mode():
     untrained_preds = model_0(X_test.to(device))
-    print(f"Lenght of untrained_preds of CircleModelv1 model_0 => {len(untrained_preds)}")
+    print(f"untrained_preds of CircleModelv1 model_0 => {untrained_preds[:5]}")
 
 
