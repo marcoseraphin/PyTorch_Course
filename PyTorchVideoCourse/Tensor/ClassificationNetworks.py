@@ -96,4 +96,9 @@ loss_fn = nn.BCEWithLogitsLoss() # sigmoid activation function built-in
 optimizer = torch.optim.SGD(model_0.parameters(), lr=0.1)
 
 # Calculate accuracy 
+def accuracy_fn(y_true, y_pred):
+    correct = torch.eq(y_true, y_pred).sum().item()
+    acc = (correct / len(y_pred)) * 100
+    return acc
+
 
