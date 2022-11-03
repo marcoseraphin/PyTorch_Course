@@ -90,4 +90,10 @@ with torch.inference_mode():
     untrained_preds = model_0(X_test.to(device))
     print(f"untrained_preds of CircleModelv1 model_0 => {untrained_preds[:5]}")
 
+# Setup loss function and optimizer (for classification use cross entropy)
+loss_fn = nn.BCEWithLogitsLoss() # sigmoid activation function built-in
+
+optimizer = torch.optim.SGD(model_0.parameters(), lr=0.1)
+
+# Calculate accuracy 
 
