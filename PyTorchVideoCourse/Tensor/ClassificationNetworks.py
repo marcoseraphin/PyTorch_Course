@@ -1,4 +1,5 @@
 from turtle import forward
+import requests
 import torch
 import sklearn
 from torch import Tensor, nn # nn contains all of PyTorch's building blocks for neural networks
@@ -100,5 +101,72 @@ def accuracy_fn(y_true, y_pred):
     correct = torch.eq(y_true, y_pred).sum().item()
     acc = (correct / len(y_pred)) * 100
     return acc
+
+
+# Logits
+y_logits = model_0(X_test.to(device))[:5]
+print(f"y_logits of model_0 => {y_logits}")
+
+# Use the sigmiod actication function on our model logits to turn them into prediction probabilities
+y_pred_probs = torch.sigmoid(y_logits)
+print(f"Rounded y_pred_probs of model_0 => {torch.round(y_pred_probs)}")
+
+# Find predicted lablels
+y_preds = torch.round(y_pred_probs)
+
+# Full (logits => pred probs => pred labels)
+y_pred_labels = torch.round(torch.sigmoid(model_0(X_test.to(device))[:5]))
+
+# Check equality
+print(f"y_preds equal y_pred_labels of model_0 => {torch.eq(y_preds.squeeze(), y_pred_labels.squeeze())}")
+print(f"y_preds of model_0 => {torch.squeeze(y_preds)}")
+
+# Train the model
+torch.manual_seed(42)
+
+epochs = 100
+
+# Put data to the MPS
+X_train, y_train = X_train.to(device), y_train.to(device)
+X_test, y_test = X_test.to(device), y_test.to(device)
+
+for epoch in range(epochs):
+    model_0.train()
+
+    # Forward pass
+    y_logits = model_0(X_train).squeeze()
+    y_pred = torch.round(torch.sigmoid(y_logits))
+
+    # Calculate loss and accuarcy (loss_fn is BCEWithLogitsLoss, so it requires logits as input)
+    loss = loss_fn(y_logits, 
+                   y_train)
+
+    acc = accuracy_fn(y_true=y_train,
+                      y_pred=y_pred)
+
+    # Optimizer zero grad
+    optimizer.zero_grad()
+
+    # Loss backward
+    loss.backward()
+
+    # Optimizer step (gradient descent)
+    optimizer.step()
+
+    # Testing
+    model_0.eval()
+    with torch.inference_mode():
+        test_logits = model_0(X_test).squeeze()
+        test_pred = torch.round(torch.sigmoid(test_logits))
+
+        test_loss = loss_fn(test_logits, y_test)
+        test_acc = accuracy_fn(y_true=y_test, y_pred=test_pred)
+
+    if epoch % 10 == 0:
+        print(f"EPoch {epoch} | Loss: {loss:.5f}, Acc: {acc:.2f}% | Test loss: {test_loss:.5f}, Test acc: {test_acc:.2f}%")
+
+    # Make predictions
+
+
 
 
