@@ -1,5 +1,6 @@
 from turtle import forward
 import requests
+from pathlib import Path
 import torch
 import sklearn
 from torch import Tensor, nn # nn contains all of PyTorch's building blocks for neural networks
@@ -9,6 +10,7 @@ from pathlib import Path
 from sklearn.datasets import make_circles
 from sklearn.model_selection import train_test_split
 import pandas as pd
+from helper_functions import plot_predictions, plot_decision_boundary
 
 # Neural Network classification
 
@@ -165,7 +167,25 @@ for epoch in range(epochs):
     if epoch % 10 == 0:
         print(f"EPoch {epoch} | Loss: {loss:.5f}, Acc: {acc:.2f}% | Test loss: {test_loss:.5f}, Test acc: {test_acc:.2f}%")
 
-    # Make predictions
+# Make predictions
+if Path("helper_functions.py").is_file():
+    print("helper_functions.py is already downloaded")
+else:
+    print("Donwloading helper_functions.py")
+    request = requests.get("https://raw.githubusercontent.com/mrdbourke/pytorch-deep-learning/main/helper_functions.py")
+    with open("helper_functions.py", "wb") as f:
+        f.write(request.content)
+
+# Plot decision boundary of the model
+plt.figure(figsize=(12,6))
+plt.subplot(1,2,1)
+plt.title("Train")
+plot_decision_boundary(model_0, X_train, y_train)
+plt.subplot(1,2,2)
+plt.title("Test")
+plot_decision_boundary(model_0, X_test, y_test)
+plt.show()
+
 
 
 
