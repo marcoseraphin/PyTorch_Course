@@ -186,7 +186,71 @@ plt.title("Test")
 plot_decision_boundary(model_0, X_test, y_test)
 plt.show()
 
+# Non-linear Model
+class CircleModelNonLinear(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.layer_1 = nn.Linear(in_features=2, out_features=10)
+        self.layer_2 = nn.Linear(in_features=10, out_features=10)
+        self.layer_3 = nn.Linear(in_features=10, out_features=1)
+        self.relu = nn.ReLU()  # ReLU is a non-linear activation function
+
+    def forward(self, x):
+        return self.layer_3(self.relu(self.layer_2(self.layer_1(x))))
+
+model_nonlinear = CircleModelNonLinear().to(device=device)
+
+# Setup loss function and optimizer (for classification use cross entropy)
+loss_fn_nonlinear = nn.BCEWithLogitsLoss() # sigmoid activation function built-in
+optimizer_nonlinear = torch.optim.SGD(model_nonlinear.parameters(), lr=0.1)
+
+# Train the non-linear model
+torch.manual_seed(42)
+
+epochs_nonlinear = 1000
+
+for epoch_nonlinear in range(epochs_nonlinear):
+    model_nonlinear.train()
+
+    # Forward pass
+    y_logits_nonlinear = model_nonlinear(X_train).squeeze()
+    y_pred_nonlinear = torch.round(torch.sigmoid(y_logits_nonlinear))
+
+    # Calculate loss and accuarcy (loss_fn is BCEWithLogitsLoss, so it requires logits as input)
+    loss_nonlinear = loss_fn(y_logits_nonlinear, 
+                             y_train)
+
+    acc_nonlinear = accuracy_fn(y_true=y_train,
+                                y_pred=y_pred_nonlinear)
+
+    # Optimizer zero grad
+    optimizer_nonlinear.zero_grad()
+
+    # Loss backward
+    loss_nonlinear.backward()
+
+    # Optimizer step (gradient descent)
+    optimizer_nonlinear.step()
+
+    # Testing
+    model_nonlinear.eval()
+    with torch.inference_mode():
+        test_logits_nonlinear = model_nonlinear(X_test).squeeze()
+        test_pred_nonlinear = torch.round(torch.sigmoid(test_logits_nonlinear))
+
+        test_loss_nonlinear = loss_fn(test_logits_nonlinear, y_test)
+        test_acc_nonlinear = accuracy_fn(y_true=y_test, y_pred=test_pred_nonlinear)
+
+    if epoch_nonlinear % 10 == 0:
+        print(f"EPoch Non-linear : {epoch_nonlinear} | Loss: {loss_nonlinear:.5f}, Acc: {acc_nonlinear:.2f}% | Test loss: {test_loss_nonlinear:.5f}, Test acc: {test_acc_nonlinear:.2f}%")
 
 
-
-
+# Plot decision boundary of the model
+plt.figure(figsize=(12,6))
+plt.subplot(1,2,1)
+plt.title("Train")
+plot_decision_boundary(model_nonlinear, X_train, y_train)
+plt.subplot(1,2,2)
+plt.title("Test")
+plot_decision_boundary(model_nonlinear, X_test, y_test)
+plt.show()
