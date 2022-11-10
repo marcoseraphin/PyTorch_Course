@@ -207,7 +207,7 @@ optimizer_nonlinear = torch.optim.SGD(model_nonlinear.parameters(), lr=0.1)
 # Train the non-linear model
 torch.manual_seed(42)
 
-epochs_nonlinear = 1000
+epochs_nonlinear = 2000
 
 for epoch_nonlinear in range(epochs_nonlinear):
     model_nonlinear.train()
@@ -245,7 +245,7 @@ for epoch_nonlinear in range(epochs_nonlinear):
         print(f"EPoch Non-linear : {epoch_nonlinear} | Loss: {loss_nonlinear:.5f}, Acc: {acc_nonlinear:.2f}% | Test loss: {test_loss_nonlinear:.5f}, Test acc: {test_acc_nonlinear:.2f}%")
 
 
-# Plot decision boundary of the model
+# Plot decision boundary of the non-linear model
 plt.figure(figsize=(12,6))
 plt.subplot(1,2,1)
 plt.title("Train")
