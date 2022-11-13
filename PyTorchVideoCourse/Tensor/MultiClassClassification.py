@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.datasets import make_blobs
 from sklearn.model_selection import train_test_split
 from helper_functions import plot_predictions, plot_decision_boundary
+from torchmetrics import Accuracy
 
 NUM_CLASSES = 4
 NUM_FEATURES = 2
@@ -153,3 +154,11 @@ plt.subplot(1,2,2)
 plt.title("Test")
 plot_decision_boundary(model_blob, X_blob_test, y_blob_test)
 plt.show()
+
+# Use torchmetrics (extra package => conda install -c conda-forge torchmetrics)
+
+# Setup metric
+torchmetrics_accuary = Accuracy().to(device=device)
+
+# Calculate accuracy
+print(f"The model has {torchmetrics_accuary(y_preds, y_blob_test)}% (torchmetrics_accuary) Accuracy")
