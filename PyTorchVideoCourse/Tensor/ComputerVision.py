@@ -28,6 +28,9 @@ test_data = datasets.FashionMNIST(root="data", # where to store data
                                   transform=torchvision.transforms.ToTensor(), # transform the data
                                   target_transform=None) # transform the target labels
 
+print(f"train data: {train_data}")
+print(f"test data: {test_data}")
+
 print(f"Length of train data: {len(train_data)}")
 print(f"Length of test data: {len(test_data)}")
 
@@ -59,3 +62,5 @@ for i in range(1, rows*cols+1):
     plt.axis(False)
 
 plt.show()
+
+# Turn the data into batches
