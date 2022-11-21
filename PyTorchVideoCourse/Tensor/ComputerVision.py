@@ -6,6 +6,7 @@ import torchvision
 from torchvision import datasets
 from torchvision import transforms
 from torchvision.transforms import ToTensor
+from torch.utils.data import DataLoader
 
 # Import matpltlib
 import matplotlib.pyplot as plt
@@ -64,3 +65,32 @@ for i in range(1, rows*cols+1):
 plt.show()
 
 # Turn the data into batches
+BATCH_SIZE = 32
+
+train_dataloader = DataLoader(dataset=train_data,
+                              batch_size=BATCH_SIZE,
+                              shuffle=True)
+
+test_dataloader = DataLoader(dataset=test_data,
+                             batch_size=BATCH_SIZE,
+                             shuffle=False)
+
+train_features_batch, train_labels_batch = next(iter(train_dataloader))
+
+print(f"Length of Train DataLoader: {len(train_dataloader)} batches of {BATCH_SIZE}")
+print(f"Length of Test DataLoader: {len(test_dataloader)} batches of {BATCH_SIZE}")
+
+random_idx = torch.randint(0, len(train_features_batch), size=[1]).item()
+img, label = train_features_batch[random_idx], train_labels_batch[random_idx]
+
+plt.imshow(img.squeeze(), cmap="gray")
+plt.title(class_names[label])
+plt.axis(False)
+plt.show()
+
+print(f"Image size: {img.shape}")
+print(f"Label {label}, Label Size: {label.shape} ")
+
+
+
+
