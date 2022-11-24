@@ -181,7 +181,7 @@ for epoch in tqdm(range(epochs)): # tqdm => progress bar
         test_loss /= len(test_dataloader)
         test_acc /= len(test_dataloader)
 
-    print(f"Train Loss: {train_loss:.5f} | Test loss: {test_loss:.5f}, Test acc: {test_acc:.4f}")
+    print(f"Train Loss: {train_loss:.5f} | Test loss: {test_loss:.5f}, Test acc: {test_acc:.4f}%")
 
 train_time_end_on_cpu = timer()
 total_train_time_model0 = print_train_time(start=train_time_start_on_cpu,
@@ -250,6 +250,74 @@ model_1 = FashionMNISTModelV1(input_shape=784,
 
 print(f"model_1 now using device: {next(model_1.parameters()).device}")
 
+# Functionizing traing and evaluation/testing loops
+def train_step(model: torch.nn.Module,
+               dataloader: torch.utils.data.DataLoader,
+               loss_fn: torch.nn.Module,
+               optimizer: torch.optim.Optimizer,
+               accuracy_fn,
+               device: torch.device = device):
 
+    train_loss, train_acc = 0, 0
+    model.train()
 
+    for batch, (X, y) in enumerate(dataloader): # X = image, y = label
+        X, y = X.to(device), y.to(device)
+        y_pred = model(X)
+        loss = loss_fn(y_pred, y)
+        train_loss += loss
+        train_acc += accuracy_fn(y_true=y,
+                                 y_pred=y_pred.argmax(dim=1)) # from logits to prediction lables
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+    # Divide total train loss and accuracy by length of train dataloader
+    train_loss /= len(dataloader)
+    train_acc /= len(dataloader)
+
+    print(f"Train Loss: {train_loss:.5f} | Train accuracy: {train_acc:.2f}%")
+
+def test_step(model: torch.nn.Module,
+              dataloader: torch.utils.data.DataLoader,
+              loss_fn: torch.nn.Module,
+              accuracy_fn,
+              device: torch.device = device):
+
+    test_loss, test_acc = 0,0
+    model.eval()
+    with torch.inference_mode():
+        for X, y in dataloader:
+            X, y = X.to(device), y.to(device)
+            test_pred = model(X)
+            test_loss += loss_fn(test_pred, y)
+            test_acc += accuracy_fn(y_true=y, y_pred=test_pred.argmax(dim=1))
+    
+        test_loss /= len(dataloader)
+        test_acc /= len(dataloader)
+
+        print(f"Test Loss: {test_loss:.5f} | Test accuracy: {test_acc:.2f}%")
+
+train_time_start_on_gpu = timer()
+epochs = 3
+
+for epoch in tqdm(range(epochs)): # tqdm => progress bar
+    print(f"EPoch {epoch} on GPU {device} ")
+    train_step(model=model_1,
+               dataloader=train_dataloader,
+               loss_fn=loss_fn,
+               optimizer=optimizer,
+               accuracy_fn=accuracy_fn,
+               device=device)
+
+    test_step(model=model_1,
+              dataloader=test_dataloader,
+              loss_fn=loss_fn,
+              accuracy_fn=accuracy_fn,
+              device=device)
+
+train_time_end_on_gpu = timer()
+total_time_train_model_1_gpu = print_train_time(start=train_time_start_on_gpu, 
+                                                end=train_time_end_on_gpu, 
+                                                device=device)
 
