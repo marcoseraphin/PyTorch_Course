@@ -18,6 +18,12 @@ import matplotlib.pyplot as plt
 print(f"PyTorch version: {torch.__version__}")
 print(f"Torchvision version: {torchvision.__version__}")
 
+# Use GPU 
+# Set the model to use the target device MPS (GPU)
+# Set the device      
+device = "mps" if torch.backends.mps.is_available() else "cpu"
+print(f"Using device: {device}")
+
 # Getting a FashionMNIST dataset
 
 # Setup training data
@@ -128,7 +134,6 @@ dummy_x = torch.rand([1,1,28,28]) # Batch = 1, ColorChannel = 1, Width = 28, Hei
 print(f"Output of dummy_x thru the model_0: {model0(dummy_x)}") # one value per label class
 
 # Loss, optimizer and metrics
-
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(params=model0.parameters(),
                             lr=0.1)
@@ -192,11 +197,13 @@ total_train_time_model0 = print_train_time(start=train_time_start_on_cpu,
 def eval_model(model: torch.nn.Module,
                data_loader: torch.utils.data.DataLoader,
                loss_fn: torch.nn.Module,
-               accuracy_fn):
+               accuracy_fn,
+               device: torch.device = device):
     loss, acc = 0, 0
     model.eval()
     with torch.inference_mode():
         for X, y in tqdm(data_loader):
+            X, y = X.to(device), y.to(device)
             y_pred = model(X)
             loss += loss_fn(y_pred, y)
             acc += accuracy_fn(y_true=y,
@@ -213,16 +220,11 @@ def eval_model(model: torch.nn.Module,
 model0_results = eval_model(model=model0,
                              data_loader=test_dataloader,
                              loss_fn=loss_fn,
-                             accuracy_fn=accuracy_fn)
+                             accuracy_fn=accuracy_fn,
+                             device="cpu")
 
 
 print(f"eval_model call for model_0: {model0_results}") 
-
-# Use GPU 
-# Set the model to use the target device MPS (GPU)
-# Set the device      
-device = "mps" if torch.backends.mps.is_available() else "cpu"
-print(f"Using device: {device}")
 
 # Using a better model with non-linearity
 class FashionMNISTModelV1 (nn.Module):
@@ -237,16 +239,21 @@ class FashionMNISTModelV1 (nn.Module):
                       out_features=hidden_units),
             nn.ReLU(),
             nn.Linear(in_features=hidden_units,
-                      out_features=output_shape)
+                      out_features=output_shape),
+            nn.ReLU()
         )
 
     def forward(self, x: torch.Tensor):
         return self.layer_stack(x)
 
-
 model_1 = FashionMNISTModelV1(input_shape=784,
-                               hidden_units=10,
-                               output_shape=len(class_names)).to(device=device)
+                              hidden_units=10,
+                              output_shape=len(class_names)).to(device=device)
+
+# Loss, optimizer and metrics
+loss_fn1 = nn.CrossEntropyLoss()
+optimizer1 = torch.optim.SGD(params=model_1.parameters(),
+                             lr=0.1)
 
 print(f"model_1 now using device: {next(model_1.parameters()).device}")
 
@@ -305,14 +312,14 @@ for epoch in tqdm(range(epochs)): # tqdm => progress bar
     print(f"EPoch {epoch} on GPU {device} ")
     train_step(model=model_1,
                dataloader=train_dataloader,
-               loss_fn=loss_fn,
-               optimizer=optimizer,
+               loss_fn=loss_fn1,
+               optimizer=optimizer1,
                accuracy_fn=accuracy_fn,
                device=device)
 
     test_step(model=model_1,
               dataloader=test_dataloader,
-              loss_fn=loss_fn,
+              loss_fn=loss_fn1,
               accuracy_fn=accuracy_fn,
               device=device)
 
@@ -321,3 +328,10 @@ total_time_train_model_1_gpu = print_train_time(start=train_time_start_on_gpu,
                                                 end=train_time_end_on_gpu, 
                                                 device=device)
 
+model_1_reults = eval_model(model=model_1,
+                             data_loader=test_dataloader,
+                             loss_fn=loss_fn1,
+                             accuracy_fn=accuracy_fn,
+                             device=device)
+
+print(f"eval_model call for model_1: {model_1_reults}") 
