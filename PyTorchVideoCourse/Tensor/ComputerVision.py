@@ -1,5 +1,7 @@
 import torch
 from torch import nn
+import pandas as pd
+import random
 
 # TorchVision
 import torchvision
@@ -74,95 +76,95 @@ torch.manual_seed(42)
 
 # #plt.show()
 
-# # Turn the data into batches
-# BATCH_SIZE = 32
+# Turn the data into batches
+BATCH_SIZE = 32
 
-# train_dataloader = DataLoader(dataset=train_data,
-#                               batch_size=BATCH_SIZE,
-#                               shuffle=True)
+train_dataloader = DataLoader(dataset=train_data,
+                              batch_size=BATCH_SIZE,
+                              shuffle=True)
 
-# test_dataloader = DataLoader(dataset=test_data,
-#                              batch_size=BATCH_SIZE,
-#                              shuffle=False)
+test_dataloader = DataLoader(dataset=test_data,
+                             batch_size=BATCH_SIZE,
+                             shuffle=False)
 
-# train_features_batch, train_labels_batch = next(iter(train_dataloader))
+train_features_batch, train_labels_batch = next(iter(train_dataloader))
 
-# print(f"Length of Train DataLoader: {len(train_dataloader)} batches of {BATCH_SIZE}")
-# print(f"Length of Test DataLoader: {len(test_dataloader)} batches of {BATCH_SIZE}")
+print(f"Length of Train DataLoader: {len(train_dataloader)} batches of {BATCH_SIZE}")
+print(f"Length of Test DataLoader: {len(test_dataloader)} batches of {BATCH_SIZE}")
 
-# random_idx = torch.randint(0, len(train_features_batch), size=[1]).item()
-# img, label = train_features_batch[random_idx], train_labels_batch[random_idx]
+random_idx = torch.randint(0, len(train_features_batch), size=[1]).item()
+img, label = train_features_batch[random_idx], train_labels_batch[random_idx]
 
-# plt.imshow(img.squeeze(), cmap="gray")
-# plt.title(class_names[label])
-# plt.axis(False)
-# #plt.show()
+plt.imshow(img.squeeze(), cmap="gray")
+plt.title(class_names[label])
+plt.axis(False)
+#plt.show()
 
-# print(f"Image size: {img.shape}")
-# print(f"Label {label}, Label Size: {label.shape} ")
+print(f"Image size: {img.shape}")
+print(f"Label {label}, Label Size: {label.shape} ")
 
-# flatten_model = nn.Flatten()
-# x = train_features_batch[0]
+flatten_model = nn.Flatten()
+x = train_features_batch[0]
 
-# # Flatten the sample
-# output = flatten_model(x)
-# print(f"Shape before flattening: {x.shape}")     # => color channel, height, width
-# print(f"Shape after flattening: {output.shape}") # => color channel, height * width
+# Flatten the sample
+output = flatten_model(x)
+print(f"Shape before flattening: {x.shape}")     # => color channel, height, width
+print(f"Shape after flattening: {output.shape}") # => color channel, height * width
 
-# class FashionMNISTModelV0(nn.Module):
-#     def __init__(self,
-#                  input_shape: int,
-#                  hidden_units: int,
-#                  output_shape: int) -> None:
-#         super().__init__()
-#         self.layer_stack = nn.Sequential(
-#             nn.Flatten(),
-#             nn.Linear(in_features=input_shape,
-#                        out_features=hidden_units),
-#             nn.Linear(in_features=hidden_units,
-#                        out_features=output_shape)
-#         )
+class FashionMNISTModelV0(nn.Module):
+    def __init__(self,
+                 input_shape: int,
+                 hidden_units: int,
+                 output_shape: int) -> None:
+        super().__init__()
+        self.layer_stack = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(in_features=input_shape,
+                       out_features=hidden_units),
+            nn.Linear(in_features=hidden_units,
+                       out_features=output_shape)
+        )
 
-#     def forward(self, x):
-#         return self.layer_stack(x)
+    def forward(self, x):
+        return self.layer_stack(x)
 
-# model0 = FashionMNISTModelV0(input_shape=784, # 28x28 pixels of the image after flatten
-#                              hidden_units=10,
-#                              output_shape=len(class_names) ) 
+model_0 = FashionMNISTModelV0(input_shape=784, # 28x28 pixels of the image after flatten
+                             hidden_units=10,
+                             output_shape=len(class_names) ) 
 
-# dummy_x = torch.rand([1,1,28,28]) # Batch = 1, ColorChannel = 1, Width = 28, Height = 28
-# print(f"Output of dummy_x thru the model_0: {model0(dummy_x)}") # one value per label class
+dummy_x = torch.rand([1,1,28,28]) # Batch = 1, ColorChannel = 1, Width = 28, Height = 28
+print(f"Output of dummy_x thru the model_0: {model_0(dummy_x)}") # one value per label class
 
-# # Loss, optimizer and metrics
-# loss_fn = nn.CrossEntropyLoss()
-# optimizer = torch.optim.SGD(params=model0.parameters(),
-#                             lr=0.1)
+# Loss, optimizer and metrics
+loss_fn = nn.CrossEntropyLoss()
+optimizer = torch.optim.SGD(params=model_0.parameters(),
+                            lr=0.1)
 
-# # Create a function to time our experiments
-# def print_train_time(start: float,
-#                      end: float,
-#                      device: torch.device = None):
-#         total_time = end - start
-#         print(f"Train time on {device}: {total_time:.3f} seconds")
-#         return total_time
+# Create a function to time our experiments
+def print_train_time(start: float,
+                     end: float,
+                     device: torch.device = None):
+        total_time = end - start
+        print(f"Train time on {device}: {total_time:.3f} seconds")
+        return total_time
 
-# start_time = timer()
-# time.sleep(1)
-# end_time= timer()
-# print_train_time(start=start_time,
-#                  end=end_time,
-#                  device="cpu")
+start_time = timer()
+time.sleep(1)
+end_time= timer()
+print_train_time(start=start_time,
+                 end=end_time,
+                 device="cpu")
 
-# # Training loop based on bacthes => update parameter per batch and not per epoch
-# train_time_start_on_cpu = timer()
-# epochs = 3
+# Training loop based on bacthes => update parameter per batch and not per epoch
+train_time_start_on_cpu = timer()
+epochs = 3
 
 # for epoch in tqdm(range(epochs)): # tqdm => progress bar
 #     print(f"Epoch: {epoch}")
 #     train_loss = 0
 #     for batch, (X, y) in enumerate(train_dataloader): # X = image, y = label
-#         model0.train()
-#         y_pred = model0(X)
+#         model_0.train()
+#         y_pred = model_0(X)
 #         loss = loss_fn(y_pred, y)
 #         train_loss += loss
 #         optimizer.zero_grad()
@@ -176,10 +178,10 @@ torch.manual_seed(42)
 
 #     # Testing
 #     test_loss, test_acc = 0,0
-#     model0.eval()
+#     model_0.eval()
 #     with torch.inference_mode():
 #         for X_test,y_test in test_dataloader:
-#             test_pred = model0(X_test)
+#             test_pred = model_0(X_test)
 #             test_loss += loss_fn(test_pred, y_test)
 #             test_acc += accuracy_fn(y_true=y_test, y_pred=test_pred.argmax(dim=1))
     
@@ -188,125 +190,125 @@ torch.manual_seed(42)
 
 #     print(f"Train Loss: {train_loss:.5f} | Test loss: {test_loss:.5f}, Test acc: {test_acc:.4f}%")
 
-# train_time_end_on_cpu = timer()
-# total_train_time_model0 = print_train_time(start=train_time_start_on_cpu,
-#                                             end=train_time_end_on_cpu,
-#                                             device=str(next(model0.parameters()).device))
+train_time_end_on_cpu = timer()
+total_train_time_model0 = print_train_time(start=train_time_start_on_cpu,
+                                            end=train_time_end_on_cpu,
+                                            device=str(next(model_0.parameters()).device))
 
-# # Make predictions function
-# def eval_model(model: torch.nn.Module,
-#                data_loader: torch.utils.data.DataLoader,
-#                loss_fn: torch.nn.Module,
-#                accuracy_fn,
-#                device: torch.device = device):
-#     loss, acc = 0, 0
-#     model.eval()
-#     with torch.inference_mode():
-#         for X, y in tqdm(data_loader):
-#             X, y = X.to(device), y.to(device)
-#             y_pred = model(X)
-#             loss += loss_fn(y_pred, y)
-#             acc += accuracy_fn(y_true=y,
-#                                y_pred=y_pred.argmax(dim=1))
+# Make predictions function
+def eval_model(model: torch.nn.Module,
+               data_loader: torch.utils.data.DataLoader,
+               loss_fn: torch.nn.Module,
+               accuracy_fn,
+               device: torch.device = device):
+    loss, acc = 0, 0
+    model.eval()
+    with torch.inference_mode():
+        for X, y in tqdm(data_loader):
+            X, y = X.to(device), y.to(device)
+            y_pred = model(X)
+            loss += loss_fn(y_pred, y)
+            acc += accuracy_fn(y_true=y,
+                               y_pred=y_pred.argmax(dim=1))
         
-#         loss /= len(data_loader)
-#         acc /= len(data_loader)
+        loss /= len(data_loader)
+        acc /= len(data_loader)
 
-#     return {"model_name": model.__class__.__name__,
-#            "model_loss": loss.item(),
-#            "model_acc": acc}
-
-
-# model0_results = eval_model(model=model0,
-#                              data_loader=test_dataloader,
-#                              loss_fn=loss_fn,
-#                              accuracy_fn=accuracy_fn,
-#                              device="cpu")
+    return {"model_name": model.__class__.__name__,
+           "model_loss": loss.item(),
+           "model_acc": acc}
 
 
-# print(f"eval_model call for model_0: {model0_results}") 
+model_0_results = eval_model(model=model_0,
+                             data_loader=test_dataloader,
+                             loss_fn=loss_fn,
+                             accuracy_fn=accuracy_fn,
+                             device="cpu")
 
-# # Using a better model with non-linearity
-# class FashionMNISTModelV1 (nn.Module):
-#     def __init__(self,
-#                  input_shape: int,
-#                  hidden_units: int,
-#                  output_shape: int) -> None:
-#         super().__init__()
-#         self.layer_stack = nn.Sequential(
-#             nn.Flatten(), # flatten image inputs into a single vector
-#             nn.Linear(in_features=input_shape,
-#                       out_features=hidden_units),
-#             nn.ReLU(),
-#             nn.Linear(in_features=hidden_units,
-#                       out_features=output_shape),
-#             nn.ReLU()
-#         )
 
-#     def forward(self, x: torch.Tensor):
-#         return self.layer_stack(x)
+print(f"eval_model call for model_0: {model_0_results}") 
 
-# model_1 = FashionMNISTModelV1(input_shape=784,
-#                               hidden_units=10,
-#                               output_shape=len(class_names)).to(device=device)
+# Using a better model with non-linearity
+class FashionMNISTModelV1 (nn.Module):
+    def __init__(self,
+                 input_shape: int,
+                 hidden_units: int,
+                 output_shape: int) -> None:
+        super().__init__()
+        self.layer_stack = nn.Sequential(
+            nn.Flatten(), # flatten image inputs into a single vector
+            nn.Linear(in_features=input_shape,
+                      out_features=hidden_units),
+            nn.ReLU(),
+            nn.Linear(in_features=hidden_units,
+                      out_features=output_shape),
+            nn.ReLU()
+        )
 
-# # Loss, optimizer and metrics
-# loss_fn1 = nn.CrossEntropyLoss()
-# optimizer1 = torch.optim.SGD(params=model_1.parameters(),
-#                              lr=0.1)
+    def forward(self, x: torch.Tensor):
+        return self.layer_stack(x)
 
-# print(f"model_1 now using device: {next(model_1.parameters()).device}")
+model_1 = FashionMNISTModelV1(input_shape=784,
+                              hidden_units=10,
+                              output_shape=len(class_names)).to(device=device)
 
-# # Functionizing traing and evaluation/testing loops
-# def train_step(model: torch.nn.Module,
-#                dataloader: torch.utils.data.DataLoader,
-#                loss_fn: torch.nn.Module,
-#                optimizer: torch.optim.Optimizer,
-#                accuracy_fn,
-#                device: torch.device = device):
+# Loss, optimizer and metrics
+loss_fn1 = nn.CrossEntropyLoss()
+optimizer1 = torch.optim.SGD(params=model_1.parameters(),
+                             lr=0.1)
 
-#     train_loss, train_acc = 0, 0
-#     model.train()
+print(f"model_1 now using device: {next(model_1.parameters()).device}")
 
-#     for batch, (X, y) in enumerate(dataloader): # X = image, y = label
-#         X, y = X.to(device), y.to(device)
-#         y_pred = model(X)
-#         loss = loss_fn(y_pred, y)
-#         train_loss += loss
-#         train_acc += accuracy_fn(y_true=y,
-#                                  y_pred=y_pred.argmax(dim=1)) # from logits to prediction lables
-#         optimizer.zero_grad()
-#         loss.backward()
-#         optimizer.step()
+# Functionizing traing and evaluation/testing loops
+def train_step(model: torch.nn.Module,
+               dataloader: torch.utils.data.DataLoader,
+               loss_fn: torch.nn.Module,
+               optimizer: torch.optim.Optimizer,
+               accuracy_fn,
+               device: torch.device = device):
 
-#     # Divide total train loss and accuracy by length of train dataloader
-#     train_loss /= len(dataloader)
-#     train_acc /= len(dataloader)
+    train_loss, train_acc = 0, 0
+    model.train()
 
-#     print(f"Train Loss: {train_loss:.5f} | Train accuracy: {train_acc:.2f}%")
+    for batch, (X, y) in enumerate(dataloader): # X = image, y = label
+        X, y = X.to(device), y.to(device)
+        y_pred = model(X)
+        loss = loss_fn(y_pred, y)
+        train_loss += loss
+        train_acc += accuracy_fn(y_true=y,
+                                 y_pred=y_pred.argmax(dim=1)) # from logits to prediction lables
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
 
-# def test_step(model: torch.nn.Module,
-#               dataloader: torch.utils.data.DataLoader,
-#               loss_fn: torch.nn.Module,
-#               accuracy_fn,
-#               device: torch.device = device):
+    # Divide total train loss and accuracy by length of train dataloader
+    train_loss /= len(dataloader)
+    train_acc /= len(dataloader)
 
-#     test_loss, test_acc = 0,0
-#     model.eval()
-#     with torch.inference_mode():
-#         for X, y in dataloader:
-#             X, y = X.to(device), y.to(device)
-#             test_pred = model(X)
-#             test_loss += loss_fn(test_pred, y)
-#             test_acc += accuracy_fn(y_true=y, y_pred=test_pred.argmax(dim=1))
+    print(f"Train Loss: {train_loss:.5f} | Train accuracy: {train_acc:.2f}%")
+
+def test_step(model: torch.nn.Module,
+              dataloader: torch.utils.data.DataLoader,
+              loss_fn: torch.nn.Module,
+              accuracy_fn,
+              device: torch.device = device):
+
+    test_loss, test_acc = 0,0
+    model.eval()
+    with torch.inference_mode():
+        for X, y in dataloader:
+            X, y = X.to(device), y.to(device)
+            test_pred = model(X)
+            test_loss += loss_fn(test_pred, y)
+            test_acc += accuracy_fn(y_true=y, y_pred=test_pred.argmax(dim=1))
     
-#         test_loss /= len(dataloader)
-#         test_acc /= len(dataloader)
+        test_loss /= len(dataloader)
+        test_acc /= len(dataloader)
 
-#         print(f"Test Loss: {test_loss:.5f} | Test accuracy: {test_acc:.2f}%")
+        print(f"Test Loss: {test_loss:.5f} | Test accuracy: {test_acc:.2f}%")
 
-# train_time_start_on_gpu = timer()
-# epochs = 3
+train_time_start_on_gpu = timer()
+epochs = 3
 
 # for epoch in tqdm(range(epochs)): # tqdm => progress bar
 #     print(f"EPoch {epoch} on GPU {device} ")
@@ -328,13 +330,13 @@ torch.manual_seed(42)
 #                                                 end=train_time_end_on_gpu, 
 #                                                 device=device)
 
-# model_1_results = eval_model(model=model_1,
-#                              data_loader=test_dataloader,
-#                              loss_fn=loss_fn1,
-#                              accuracy_fn=accuracy_fn,
-#                              device=device)
+model_1_results = eval_model(model=model_1,
+                             data_loader=test_dataloader,
+                             loss_fn=loss_fn1,
+                             accuracy_fn=accuracy_fn,
+                             device=device)
 
-# print(f"eval_model call for model_1: {model_1_results}") 
+print(f"eval_model call for model_1: {model_1_results}") 
 
 
 # CNN Network (Convolutional neural network)
@@ -382,24 +384,25 @@ class FashionMNISTModuleV2CNN(nn.Module):
         # Classifier output layer to turn features into labels
         self.classifier = nn.Sequential(
             nn.Flatten(), # flatten image inputs into a single vector
-            nn.Linear(in_features=hidden_units*1*1,
+            nn.Linear(in_features=hidden_units*7*7,  # => output shape of conv_block_2 = [7,7]
                       out_features=output_shape)
         )
 
     def forward(self, x):
         x = self.conv_block_1(x)
-        print(x.shape)
+        #print(f"Output conv_block_1 shape: {x.shape}")
         x = self.conv_block_2(x)
-        print(x.shape)
+        #print(f"Output conv_block_2 shape: {x.shape}")
         x = self.classifier(x)
+        #print(f"Output classifier shape: {x.shape}")
         return x
 
 
 model_2 = FashionMNISTModuleV2CNN(input_shape=1,   # number of color channel (here 1 = black/white)
-                                   hidden_units=10,
-                                   output_shape=len(class_names)).to(device)
+                                  hidden_units=10,
+                                  output_shape=len(class_names)).to(device)
 
-print(f"CNN model_2: {model_2}") 
+#print(f"CNN model_2: {model_2}") 
 
 images = torch.randn(size=[32,3,64,64])
 test_image = images[0]
@@ -431,7 +434,7 @@ print(f"Image after conv layer shape: {test_image_conv.shape}")
 test_image_trough_conv_and_max_pool = max_pool_layer(test_image_conv)
 print(f"Image after conv layer and maxpool layer shape: {test_image_trough_conv_and_max_pool.shape}") 
 
-# simple demo of maxpool2d
+# Simple demo of maxpool2d
 random_tensor = torch.randn(size=[1,1,2,2])
 print(f"random_tensor: {random_tensor}") 
 print(f"random_tensor Shape: {random_tensor.shape}") 
@@ -440,3 +443,95 @@ max_pool_layer_demo = nn.MaxPool2d(kernel_size=2)
 max_pool_tensor = max_pool_layer(random_tensor)
 print(f"max_pool_tensor: {max_pool_tensor}") 
 print(f"max_pool_tensor Shape: {max_pool_tensor.shape}") 
+
+print(f"sample_image Shape: {img.shape}") 
+#plt.imshow(img.squeeze(), cmap="gray")
+#plt.show()
+output_model_2 = model_2(img.unsqueeze(0).to(device))
+print(f"output_model_2: {output_model_2}") 
+
+# Train the CNN
+loss_fn_cnn = nn.CrossEntropyLoss()
+optimzer_cnn = torch.optim.SGD(params=model_2.parameters(), lr=0.01)
+
+train_time_start_on_gpu = timer()
+
+epochs = 3
+for epoch in tqdm(range(epochs)): # tqdm => progress bar
+    print(f"EPoch {epoch} on GPU {device} ")
+    train_step(model=model_2,
+               dataloader=train_dataloader,
+               loss_fn=loss_fn_cnn,
+               optimizer=optimzer_cnn,
+               accuracy_fn=accuracy_fn,
+               device=device)
+
+    test_step(model=model_2,
+              dataloader=test_dataloader,
+              loss_fn=loss_fn_cnn,
+              accuracy_fn=accuracy_fn,
+              device=device)
+
+train_time_end_on_gpu = timer()
+total_time_train_model_1_gpu = print_train_time(start=train_time_start_on_gpu, 
+                                                end=train_time_end_on_gpu, 
+                                                device=device)
+
+model_2_results = eval_model(model=model_2,
+                             data_loader=test_dataloader,
+                             loss_fn=loss_fn_cnn,
+                             accuracy_fn=accuracy_fn,
+                             device=device)
+
+print(f"eval_model call for CNN model_2: {model_1_results}") 
+
+# compare results
+compare_results = pd.DataFrame([model_0_results, model_1_results, model_2_results])
+print(f"compare_results: {compare_results}") 
+
+def make_predictions(model: torch.nn.Module,
+                     data: list,
+                     device: torch.device = device):
+    pred_probs = []
+    model.to(device)
+    model.eval()
+    with torch.inference_mode():
+        for sample in data:
+            sample = torch.unsqueeze(sample, dim=0).to(device=device)
+            pred_logits = model(sample)
+            pred_prob = torch.softmax(pred_logits.squeeze(), dim=0)
+            pred_probs.append(pred_prob.cpu())
+
+    return torch.stack(pred_probs)
+
+test_samples_list = []
+test_labels_list = []
+for sample, label in random.sample(list(test_data), k=9):
+    test_samples_list.append(sample)
+    test_labels_list.append(label)
+
+# Make predictions
+pred_probs = make_predictions(model=model_2,
+                              data=test_samples_list)
+
+# Convert prediction probalilities into labels
+pred_classes = pred_probs.argmax(dim=1)
+print(f"pred_classes: {pred_classes}") 
+print(f"test_labels_list: {test_labels_list}") 
+
+plt.figure(figsize=(9,9))
+nrows = 3
+ncols = 3
+for i, sample in enumerate(test_samples_list):
+    plt.subplot(nrows, ncols, i+1)
+    plt.axis(False)
+    plt.imshow(sample.squeeze(), cmap="gray")
+    pred_label = class_names[pred_classes[i]]
+    truth_label =  class_names[test_labels_list[i]]
+    tite_text = f"Pred: {pred_label} | Truth: {truth_label}"
+    if pred_label == truth_label:
+        plt.title(tite_text, fontsize=10, c="g")
+    else:
+        plt.title(tite_text, fontsize=10, c="r")
+plt.show()
+
