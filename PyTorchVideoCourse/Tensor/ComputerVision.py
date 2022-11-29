@@ -13,6 +13,8 @@ from helper_functions import accuracy_fn
 from timeit import default_timer as timer
 import time
 from tqdm.auto import tqdm
+from pathlib import Path
+#import torchmetrics, mlxtend
 
 # Import matpltlib
 import matplotlib.pyplot as plt
@@ -535,3 +537,59 @@ for i, sample in enumerate(test_samples_list):
         plt.title(tite_text, fontsize=10, c="r")
 plt.show()
 
+
+# Making a confusion matrix
+# https://torchmetrics.readthedocs.io/en/stable/classification/confusion_matrix.html
+
+# Make predictions with trained model
+y_preds = []
+model_2.eval()
+with torch.inference_mode():
+    for X, y in tqdm(test_dataloader, desc="Making predictions...."):
+        X, y = X.to(device), y.to(device)
+        y_logits = model_2(X)
+        y_pred = torch.softmax(y_logits.squeeze(), dim=0).argmax(dim=1)
+        y_preds.append(y_pred.cpu())
+
+#print(f"y_preds: {y_preds}") 
+y_pred_tensor = torch.cat(y_preds)
+print(f"First 10 y_pred_tensor values: {y_pred_tensor[:10]}") 
+
+#print(f"mlextend version: {mlxtend.__version__}")
+
+# try:
+#     import torchmetrics, mlxtend
+#     print(f"mlextend version: {mlxtend.__version__}")
+#     assert int(mlxtend.__version__.split(".")[1] >= 19, "mlxtend should be version 0.19.0 or higher")
+# except:
+#     !pip install torchmetrics -U mlxtend
+#     import torchmetrics, mlxtend
+#     print(f"mlextend version: {mlxtend.__version__}")
+
+# Save the model_2
+MODEL_PATH = Path("savedmodels")
+MODEL_PATH.mkdir(parents=True, exist_ok=True)
+
+MODEL_NAME = "CNN_Model_2.pth"
+MODEL_SAVE_PATH = MODEL_PATH / MODEL_NAME
+
+print(f"Saving a model to : {MODEL_SAVE_PATH}") 
+torch.save(obj=model_2.state_dict(), f=MODEL_SAVE_PATH)
+
+loaded_model_2 = FashionMNISTModuleV2CNN(input_shape=1,   # number of color channel (here 1 = black/white)
+                                  hidden_units=10,
+                                  output_shape=len(class_names))
+
+
+print(f"Loading model 2 from : {MODEL_SAVE_PATH}") 
+loaded_model_2.load_state_dict(torch.load(f=MODEL_SAVE_PATH))
+loaded_model_2.to(device)
+
+torch.manual_seed(42)
+loaded_model_2_results = eval_model(model=loaded_model_2,
+                                     data_loader=test_dataloader,
+                                     loss_fn=loss_fn_cnn,
+                                     accuracy_fn=accuracy_fn)
+
+compare_results = pd.DataFrame([model_2_results, loaded_model_2_results])
+print(f"compare_results of model_2 and loaded_model_2: {compare_results}") 
