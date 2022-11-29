@@ -66,17 +66,17 @@ plt.axis(False)
 
 # plot random image
 torch.manual_seed(42)
-# fig = plt.figure(figsize=(9,9))
-# rows, cols = 4,4
-# for i in range(1, rows*cols+1):
-#     random_idx = torch.randint(0, len(train_data), size=[1]).item()
-#     img, label = train_data[random_idx]
-#     fig.add_subplot(rows, cols, i)
-#     plt.imshow(img.squeeze(), cmap="gray")
-#     plt.title(class_names[label])
-#     plt.axis(False)
+fig = plt.figure(figsize=(9,9))
+rows, cols = 4,4
+for i in range(1, rows*cols+1):
+    random_idx = torch.randint(0, len(train_data), size=[1]).item()
+    img, label = train_data[random_idx]
+    fig.add_subplot(rows, cols, i)
+    plt.imshow(img.squeeze(), cmap="gray")
+    plt.title(class_names[label])
+    plt.axis(False)
 
-# #plt.show()
+#plt.show()
 
 # Turn the data into batches
 BATCH_SIZE = 32
@@ -161,36 +161,36 @@ print_train_time(start=start_time,
 train_time_start_on_cpu = timer()
 epochs = 3
 
-# for epoch in tqdm(range(epochs)): # tqdm => progress bar
-#     print(f"Epoch: {epoch}")
-#     train_loss = 0
-#     for batch, (X, y) in enumerate(train_dataloader): # X = image, y = label
-#         model_0.train()
-#         y_pred = model_0(X)
-#         loss = loss_fn(y_pred, y)
-#         train_loss += loss
-#         optimizer.zero_grad()
-#         loss.backward()
-#         optimizer.step()
-#         if batch % 400 == 0:
-#             print(f"Looked at {batch * len(X)} / {len(train_dataloader.dataset)} samples.")
+for epoch in tqdm(range(epochs)): # tqdm => progress bar
+    print(f"Epoch: {epoch}")
+    train_loss = 0
+    for batch, (X, y) in enumerate(train_dataloader): # X = image, y = label
+        model_0.train()
+        y_pred = model_0(X)
+        loss = loss_fn(y_pred, y)
+        train_loss += loss
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        if batch % 400 == 0:
+            print(f"Looked at {batch * len(X)} / {len(train_dataloader.dataset)} samples.")
 
-#     # Divide total train loss by length of train dataloader
-#     train_loss /= len(train_dataloader)
+    # Divide total train loss by length of train dataloader
+    train_loss /= len(train_dataloader)
 
-#     # Testing
-#     test_loss, test_acc = 0,0
-#     model_0.eval()
-#     with torch.inference_mode():
-#         for X_test,y_test in test_dataloader:
-#             test_pred = model_0(X_test)
-#             test_loss += loss_fn(test_pred, y_test)
-#             test_acc += accuracy_fn(y_true=y_test, y_pred=test_pred.argmax(dim=1))
+    # Testing
+    test_loss, test_acc = 0,0
+    model_0.eval()
+    with torch.inference_mode():
+        for X_test,y_test in test_dataloader:
+            test_pred = model_0(X_test)
+            test_loss += loss_fn(test_pred, y_test)
+            test_acc += accuracy_fn(y_true=y_test, y_pred=test_pred.argmax(dim=1))
     
-#         test_loss /= len(test_dataloader)
-#         test_acc /= len(test_dataloader)
+        test_loss /= len(test_dataloader)
+        test_acc /= len(test_dataloader)
 
-#     print(f"Train Loss: {train_loss:.5f} | Test loss: {test_loss:.5f}, Test acc: {test_acc:.4f}%")
+    print(f"Train Loss: {train_loss:.5f} | Test loss: {test_loss:.5f}, Test acc: {test_acc:.4f}%")
 
 train_time_end_on_cpu = timer()
 total_train_time_model0 = print_train_time(start=train_time_start_on_cpu,
@@ -312,25 +312,25 @@ def test_step(model: torch.nn.Module,
 train_time_start_on_gpu = timer()
 epochs = 3
 
-# for epoch in tqdm(range(epochs)): # tqdm => progress bar
-#     print(f"EPoch {epoch} on GPU {device} ")
-#     train_step(model=model_1,
-#                dataloader=train_dataloader,
-#                loss_fn=loss_fn1,
-#                optimizer=optimizer1,
-#                accuracy_fn=accuracy_fn,
-#                device=device)
+for epoch in tqdm(range(epochs)): # tqdm => progress bar
+    print(f"EPoch {epoch} on GPU {device} ")
+    train_step(model=model_1,
+               dataloader=train_dataloader,
+               loss_fn=loss_fn1,
+               optimizer=optimizer1,
+               accuracy_fn=accuracy_fn,
+               device=device)
 
-#     test_step(model=model_1,
-#               dataloader=test_dataloader,
-#               loss_fn=loss_fn1,
-#               accuracy_fn=accuracy_fn,
-#               device=device)
+    test_step(model=model_1,
+              dataloader=test_dataloader,
+              loss_fn=loss_fn1,
+              accuracy_fn=accuracy_fn,
+              device=device)
 
-# train_time_end_on_gpu = timer()
-# total_time_train_model_1_gpu = print_train_time(start=train_time_start_on_gpu, 
-#                                                 end=train_time_end_on_gpu, 
-#                                                 device=device)
+train_time_end_on_gpu = timer()
+total_time_train_model_1_gpu = print_train_time(start=train_time_start_on_gpu, 
+                                                end=train_time_end_on_gpu, 
+                                                device=device)
 
 model_1_results = eval_model(model=model_1,
                              data_loader=test_dataloader,
