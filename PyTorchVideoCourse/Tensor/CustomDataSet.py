@@ -87,3 +87,29 @@ data_transform = transforms.Compose([
 print(f"data_transform(random_image): {data_transform(random_image)}")
 print(f"Shape of data_transform(random_image): {data_transform(random_image).shape}")
 
+def plot_transformed_image(image_paths, transform, n=3, seed=None):
+    if seed:
+        random.seed(seed)
+    random_image_paths = random.sample(image_paths, k=n)
+    for image_path in random_image_paths:
+        with Image.open(image_path) as f:
+            fig, ax = plt.subplots(nrows=1, ncols=2)
+            ax[0].imshow(f)
+            ax[0].set_title(f"Original\nSize {f.size}")
+            ax[0].axis(False)
+
+            transformed_image = transform(f).permute(1,2,0) # => (C, H, W) reorder to (H, W, C)
+            ax[1].imshow(transformed_image)
+            ax[1].set_title(f"Transformed\nShape {transformed_image.shape}")
+            ax[1].axis(False)
+
+            fig.suptitle(f"Class: {image_path.parent.stem}", fontsize=16)
+
+
+plot_transformed_image(image_paths=image_path_list,
+                        transform=data_transform,
+                        n=3,
+                        seed=42)
+
+plt.show()
+
