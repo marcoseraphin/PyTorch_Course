@@ -74,7 +74,7 @@ image_as_array = np.asarray(random_image)
 plt.imshow(image_as_array)
 plt.title(f"Image class: {image_class} | Image shape: {image_as_array.shape} => [height, width, color]")
 plt.axis(False)
-plt.show()
+#plt.show()
 
 # Transforming data (image to Tensor)
 data_transform = transforms.Compose([
@@ -111,5 +111,56 @@ plot_transformed_image(image_paths=image_path_list,
                         n=3,
                         seed=42)
 
-plt.show()
+#plt.show()
 
+# Option 1: Loading image data using folder
+train_data = datasets.ImageFolder(root=train_dir,
+                                  transform=data_transform, # transform for the data
+                                  target_transform=None)    # transform for the label/target
+
+test_data = datasets.ImageFolder(root=test_dir,
+                                  transform=data_transform, # transform for the data
+                                  target_transform=None)    # transform for the label/target
+
+# Print datasets
+print(f"train_data: {train_data}")
+print(f"test_data: {test_data}")
+
+class_names = train_data.classes
+class_dict = train_data.class_to_idx
+first_image_path = train_data.samples[0]
+
+print(f"class_names: {class_names}")
+print(f"class_dict: {class_dict}")
+print(f"first_image_path: {first_image_path}")
+
+img, label = train_data[0][0], train_data[0][1]
+print(f"Image tensor: {img}")
+print(f"Label: {label}")
+print(f"Class of Label: {class_names[label]}")
+
+# Reanrange the order of dimensions
+image_permute = img.permute(1,2,0) # color last
+print(f"Original shape: {img.shape}") # color_channels, height, width
+print(f"image_permute: {image_permute}") # height, width, color_channels
+
+plt.figure(figsize=(10,7))
+plt.imshow(image_permute)
+plt.title(class_names[label], fontsize=14)
+plt.axis(False)
+#plt.show()
+
+# Turn loaded images from datasets into DataLoader
+BATCH_SIZE = 1
+train_data_loader = DataLoader(dataset=train_data,
+                               batch_size=BATCH_SIZE,
+                               num_workers=os.cpu_count(),
+                               shuffle=True)
+
+test_data_loader = DataLoader(dataset=test_data,
+                              batch_size=BATCH_SIZE,
+                              num_workers=os.cpu_count(),
+                              shuffle=False)
+
+# img_loader, label_loader = next(iter(train_data_loader))
+#print(f"Image shape: {img.shape}") # batch_size, color_channels, height, width
