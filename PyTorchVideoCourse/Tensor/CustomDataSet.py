@@ -14,6 +14,7 @@ from torchinfo import summary
 from tqdm.auto import tqdm
 from typing import Tuple, Dict, List
 import pandas as pd
+import torchvision
 
 # Use GPU 
 # Set the model to use the target device MPS (GPU)
@@ -222,7 +223,7 @@ class TinyVGG(nn.Module):
 
 torch.manual_seed(42)
 model_0 = TinyVGG(input_shape=3, # number of color channels (3 for RGB) 
-                  hidden_units=20, 
+                  hidden_units=10, 
                   output_shape=len(train_data.classes)).to(device)
 
 print(f"model_0: {model_0}")
@@ -351,11 +352,11 @@ torch.manual_seed(42)
 #torch.cuda.manual_seed(42)
 
 # Set number of epochs
-NUM_EPOCHS = 45
+NUM_EPOCHS = 15
 
 # Recreate an instance of TinyVGG
 model_0 = TinyVGG(input_shape=3, # number of color channels (3 for RGB) 
-                  hidden_units=40, 
+                  hidden_units=10, 
                   output_shape=len(train_data.classes)).to(device)
 
 # Setup loss function and optimizer
@@ -401,7 +402,7 @@ def plot_loss_curves(results: Dict[str, List[float]]):
     epochs = range(len(results['train_loss']))
 
     # Setup a plot 
-    plt.figure(figsize=(45, 7))
+    plt.figure(figsize=(15, 7))
 
     # Plot loss
     plt.subplot(1, 2, 1)
@@ -460,7 +461,7 @@ test_dataloader_simple = DataLoader(test_data_simple,
 torch.manual_seed(42)
 model_1 = TinyVGG(
     input_shape=3,
-    hidden_units=40,
+    hidden_units=10,
     output_shape=len(train_data_augmented.classes)).to(device)
 
 
@@ -468,7 +469,7 @@ model_1 = TinyVGG(
 torch.manual_seed(42) 
 
 # Set number of epochs
-NUM_EPOCHS = 45
+NUM_EPOCHS = 15
 
 # Setup loss function and optimizer
 loss_fn = nn.CrossEntropyLoss()
@@ -496,7 +497,7 @@ model_0_df = pd.DataFrame(model_0_results)
 model_1_df = pd.DataFrame(model_1_results)
 
 # Setup a plot 
-plt.figure(figsize=(45, 10))
+plt.figure(figsize=(15, 10))
 
 # Get number of epochs
 epochs = range(len(model_0_df))
@@ -535,4 +536,128 @@ plt.legend()
 
 plt.show()
 
+# Download custom image
 
+# Setup custom image path
+custom_image_path = data_path / "04-pizza-dad.jpeg"
+
+# Download the image if it doesn't already exist
+if not custom_image_path.is_file():
+    with open(custom_image_path, "wb") as f:
+        # When downloading from GitHub, need to use the "raw" file link
+        request = requests.get("https://raw.githubusercontent.com/mrdbourke/pytorch-deep-learning/main/images/04-pizza-dad.jpeg")
+        print(f"Downloading {custom_image_path}...")
+        f.write(request.content)
+else:
+    print(f"{custom_image_path} already exists, skipping download.")
+
+
+# Load in custom image and convert the tensor values to float32
+custom_image = torchvision.io.read_image(str(custom_image_path)).type(torch.float32)
+
+# Divide the image pixel values by 255 to get them between [0, 1]
+custom_image = custom_image / 255. 
+
+# Print out image data
+print(f"Custom image tensor:\n{custom_image}\n")
+print(f"Custom image shape: {custom_image.shape}\n")
+print(f"Custom image dtype: {custom_image.dtype}")
+
+# Plot custom image
+plt.imshow(custom_image.permute(1, 2, 0)) # need to permute image dimensions from CHW -> HWC otherwise matplotlib will error
+plt.title(f"Image shape: {custom_image.shape}")
+plt.axis(False)
+
+plt.show()
+
+# Create transform pipleine to resize image
+custom_image_transform = transforms.Compose([
+    transforms.Resize((64, 64)),
+])
+
+# Transform target image
+custom_image_transformed = custom_image_transform(custom_image)
+
+# Print out original shape and new shape
+print(f"Original shape: {custom_image.shape}")
+print(f"New shape: {custom_image_transformed.shape}")
+
+# Try to make a prediction on image in uint8 format (this will error)
+model_0.eval()
+with torch.inference_mode():
+    # Add an extra dimension to image
+    custom_image_transformed_with_batch_size = custom_image_transformed.unsqueeze(dim=0)
+    
+    # Print out different shapes
+    print(f"Custom image transformed shape: {custom_image_transformed.shape}")
+    print(f"Unsqueezed custom image shape: {custom_image_transformed_with_batch_size.shape}")
+    
+    # Make a prediction on image with an extra dimension
+    custom_image_pred = model_0(custom_image_transformed.unsqueeze(dim=0).to(device))
+
+# Print out prediction logits
+print(f"Prediction logits: {custom_image_pred}")
+
+# Convert logits -> prediction probabilities (using torch.softmax() for multi-class classification)
+custom_image_pred_probs = torch.softmax(custom_image_pred, dim=1)
+print(f"Prediction probabilities: {custom_image_pred_probs}")
+
+# Convert prediction probabilities -> prediction labels
+custom_image_pred_label = torch.argmax(custom_image_pred_probs, dim=1)
+print(f"Prediction label: {custom_image_pred_label}")
+
+# Find the predicted label
+custom_image_pred_class = class_names[custom_image_pred_label.cpu()] # put pred label to CPU, otherwise will error
+custom_image_pred_class
+
+def pred_and_plot_image(model: torch.nn.Module, 
+                        image_path: str, 
+                        class_names: List[str] = None, 
+                        transform=None,
+                        device: torch.device = device):
+    """Makes a prediction on a target image and plots the image with its prediction."""
+    
+    # 1. Load in image and convert the tensor values to float32
+    target_image = torchvision.io.read_image(str(image_path)).type(torch.float32)
+    
+    # 2. Divide the image pixel values by 255 to get them between [0, 1]
+    target_image = target_image / 255. 
+    
+    # 3. Transform if necessary
+    if transform:
+        target_image = transform(target_image)
+    
+    # 4. Make sure the model is on the target device
+    model.to(device)
+    
+    # 5. Turn on model evaluation mode and inference mode
+    model.eval()
+    with torch.inference_mode():
+        # Add an extra dimension to the image
+        target_image = target_image.unsqueeze(dim=0)
+    
+        # Make a prediction on image with an extra dimension and send it to the target device
+        target_image_pred = model(target_image.to(device))
+        
+    # 6. Convert logits -> prediction probabilities (using torch.softmax() for multi-class classification)
+    target_image_pred_probs = torch.softmax(target_image_pred, dim=1)
+
+    # 7. Convert prediction probabilities -> prediction labels
+    target_image_pred_label = torch.argmax(target_image_pred_probs, dim=1)
+    
+    # 8. Plot the image alongside the prediction and prediction probability
+    plt.imshow(target_image.squeeze().permute(1, 2, 0)) # make sure it's the right size for matplotlib
+    if class_names:
+        title = f"Pred: {class_names[target_image_pred_label.cpu()]} | Prob: {target_image_pred_probs.max().cpu():.3f}"
+    else: 
+        title = f"Pred: {target_image_pred_label} | Prob: {target_image_pred_probs.max().cpu():.3f}"
+    plt.title(title)
+    plt.axis(False)
+    plt.show()
+
+# Pred on our custom image
+pred_and_plot_image(model=model_0,
+                    image_path=custom_image_path,
+                    class_names=class_names,
+                    transform=custom_image_transform,
+                    device=device)
