@@ -426,7 +426,7 @@ plt.show()
  # Augmentation
 train_transforms = transforms.Compose([
     transforms.Resize((64, 64)),
-    transforms.TrivialAugmentWide(num_magnitude_bins=31), # how intense 
+    transforms.TrivialAugmentWide(num_magnitude_bins=11), # how intense 
     transforms.ToTensor() # use ToTensor() last to get everything between 0 & 1
 ])
 
@@ -608,7 +608,6 @@ print(f"Prediction label: {custom_image_pred_label}")
 
 # Find the predicted label
 custom_image_pred_class = class_names[custom_image_pred_label.cpu()] # put pred label to CPU, otherwise will error
-custom_image_pred_class
 
 def pred_and_plot_image(model: torch.nn.Module, 
                         image_path: str, 
