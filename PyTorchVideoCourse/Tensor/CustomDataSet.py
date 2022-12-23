@@ -13,6 +13,7 @@ from torchvision import datasets, transforms
 from torchinfo import summary
 from tqdm.auto import tqdm
 from typing import Tuple, Dict, List
+import pandas as pd
 
 # Use GPU 
 # Set the model to use the target device MPS (GPU)
@@ -155,6 +156,9 @@ print(f"image_permute: {image_permute}") # height, width, color_channels
 
 # Turn loaded images from datasets into DataLoader
 BATCH_SIZE = 1
+num_workers = 0 # os.cpu_count()
+print(f"num_workers: {num_workers}")
+
 train_data_loader = DataLoader(dataset=train_data,
                                batch_size=BATCH_SIZE,
                                num_workers=0,
@@ -218,7 +222,7 @@ class TinyVGG(nn.Module):
 
 torch.manual_seed(42)
 model_0 = TinyVGG(input_shape=3, # number of color channels (3 for RGB) 
-                  hidden_units=10, 
+                  hidden_units=20, 
                   output_shape=len(train_data.classes)).to(device)
 
 print(f"model_0: {model_0}")
@@ -347,11 +351,11 @@ torch.manual_seed(42)
 #torch.cuda.manual_seed(42)
 
 # Set number of epochs
-NUM_EPOCHS = 5
+NUM_EPOCHS = 45
 
 # Recreate an instance of TinyVGG
 model_0 = TinyVGG(input_shape=3, # number of color channels (3 for RGB) 
-                  hidden_units=10, 
+                  hidden_units=40, 
                   output_shape=len(train_data.classes)).to(device)
 
 # Setup loss function and optimizer
@@ -397,7 +401,7 @@ def plot_loss_curves(results: Dict[str, List[float]]):
     epochs = range(len(results['train_loss']))
 
     # Setup a plot 
-    plt.figure(figsize=(15, 7))
+    plt.figure(figsize=(45, 7))
 
     # Plot loss
     plt.subplot(1, 2, 1)
@@ -417,3 +421,118 @@ def plot_loss_curves(results: Dict[str, List[float]]):
 
 plot_loss_curves(model_0_results)
 plt.show()
+
+ # Augmentation
+train_transforms = transforms.Compose([
+    transforms.Resize((64, 64)),
+    transforms.TrivialAugmentWide(num_magnitude_bins=31), # how intense 
+    transforms.ToTensor() # use ToTensor() last to get everything between 0 & 1
+])
+
+# Don't need to perform augmentation on the test data
+test_transforms = transforms.Compose([
+    transforms.Resize((64, 64)), 
+    transforms.ToTensor()
+])
+
+# 1. Load and transform data
+train_data_augmented = datasets.ImageFolder(root=train_dir, transform=train_transforms)
+test_data_simple = datasets.ImageFolder(root=test_dir, transform=test_transforms)
+
+# 2. Turn data into DataLoaders
+# Setup batch size and number of workers 
+BATCH_SIZE = 32
+NUM_WORKERS = 0 # os.cpu_count()
+print(f"Creating DataLoader's with batch size {BATCH_SIZE} and {NUM_WORKERS} workers.")
+
+# Create DataLoader's
+train_dataloader_augmented = DataLoader(train_data_augmented, 
+                                     batch_size=BATCH_SIZE, 
+                                     shuffle=True, 
+                                     num_workers=NUM_WORKERS)
+
+test_dataloader_simple = DataLoader(test_data_simple, 
+                                    batch_size=BATCH_SIZE, 
+                                    shuffle=False, 
+                                    num_workers=NUM_WORKERS)
+
+# Create model_1 and send it to the target device
+torch.manual_seed(42)
+model_1 = TinyVGG(
+    input_shape=3,
+    hidden_units=40,
+    output_shape=len(train_data_augmented.classes)).to(device)
+
+
+# Set random seeds
+torch.manual_seed(42) 
+
+# Set number of epochs
+NUM_EPOCHS = 45
+
+# Setup loss function and optimizer
+loss_fn = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(params=model_1.parameters(), lr=0.001)
+
+# Start the timer
+from timeit import default_timer as timer 
+start_time = timer()
+
+# Train model_1
+model_1_results = train(model=model_1, 
+                        train_dataloader=train_dataloader_augmented,
+                        test_dataloader=test_dataloader_simple,
+                        optimizer=optimizer,
+                        loss_fn=loss_fn, 
+                        epochs=NUM_EPOCHS)
+
+# End the timer and print out how long it took
+end_time = timer()
+print(f"Total training time: {end_time-start_time:.3f} seconds")
+
+#plot_loss_curves(model_1_results)
+
+model_0_df = pd.DataFrame(model_0_results)
+model_1_df = pd.DataFrame(model_1_results)
+
+# Setup a plot 
+plt.figure(figsize=(45, 10))
+
+# Get number of epochs
+epochs = range(len(model_0_df))
+
+# Plot train loss
+plt.subplot(2, 2, 1)
+plt.plot(epochs, model_0_df["train_loss"], label="Model 0")
+plt.plot(epochs, model_1_df["train_loss"], label="Model 1")
+plt.title("Train Loss")
+plt.xlabel("Epochs")
+plt.legend()
+
+# Plot test loss
+plt.subplot(2, 2, 2)
+plt.plot(epochs, model_0_df["test_loss"], label="Model 0")
+plt.plot(epochs, model_1_df["test_loss"], label="Model 1")
+plt.title("Test Loss")
+plt.xlabel("Epochs")
+plt.legend()
+
+# Plot train accuracy
+plt.subplot(2, 2, 3)
+plt.plot(epochs, model_0_df["train_acc"], label="Model 0")
+plt.plot(epochs, model_1_df["train_acc"], label="Model 1")
+plt.title("Train Accuracy")
+plt.xlabel("Epochs")
+plt.legend()
+
+# Plot test accuracy
+plt.subplot(2, 2, 4)
+plt.plot(epochs, model_0_df["test_acc"], label="Model 0")
+plt.plot(epochs, model_1_df["test_acc"], label="Model 1")
+plt.title("Test Accuracy")
+plt.xlabel("Epochs")
+plt.legend()
+
+plt.show()
+
+
