@@ -12,6 +12,8 @@ from torchvision import transforms
 from typing import List, Tuple
 from PIL import Image
 
+# Maschine Learning beginner technics - Underfitting/overfitting models or use a pretrained model ?
+
 # Set the device      
 device = "mps" if torch.backends.mps.is_available() else "cpu"
 print(f"Using device: {device}")
