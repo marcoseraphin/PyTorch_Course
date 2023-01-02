@@ -17,3 +17,5 @@ print(f"Using device: {device}")
 # Create data and send it to the device
 x = torch.rand(size=(3, 4)).to(device)
 print(x)
+
+
