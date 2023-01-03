@@ -4,6 +4,8 @@ import download_data
 import data_setup
 import torchvision
 import engine
+import helper_functions
+import matplotlib.pyplot as plt
 from torchvision import transforms
 from torch import nn
 from torchinfo import summary
@@ -109,4 +111,7 @@ results = engine.train(model=model,
                        loss_fn=loss_fn,
                        epochs=5,
                        device=device)
+
+helper_functions.plot_loss_curves(results=results)
+plt.show()
 
