@@ -1,7 +1,7 @@
 import os
 import openai
 
-openai.api_key = "OpenAI-API-KEY"
+openai.api_key = "See key in Notizen"
 
 response = openai.Completion.create(
   model="text-davinci-002",
