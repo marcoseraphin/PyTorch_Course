@@ -16,6 +16,9 @@ device = "mps" if torch.backends.mps.is_available() else "cpu"
 print(f"Using device: {device}")
 
 # Load data
+# image_path = download_data.download_data(source="https://github.com/mrdbourke/pytorch-deep-learning/raw/main/data/pizza_steak_sushi.zip",
+#                                          destination="pizza_steak_sushi")
+
 image_path = download_data.download_data(source="https://github.com/mrdbourke/pytorch-deep-learning/raw/main/data/pizza_steak_sushi.zip",
                                          destination="pizza_steak_sushi")
 
