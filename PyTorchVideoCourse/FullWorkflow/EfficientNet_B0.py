@@ -4,8 +4,10 @@ import download_data
 import data_setup
 import torchvision
 import engine
+import requests
 import helper_functions
 import create_writer
+from pathlib import Path
 import matplotlib.pyplot as plt
 from torchvision import transforms
 from torch import nn
@@ -26,22 +28,6 @@ test_dir = image_path / "test"
 # Setup ImageNet normalization levels (turns all images into similar distribution as ImageNet)
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
-
-# Create transform pipeline manually
-# manual_transforms = transforms.Compose([
-#     transforms.Resize((224, 224)),
-#     transforms.ToTensor(),
-#     normalize
-# ])           
-# print(f"Manually created transforms: {manual_transforms}")
-
-# # Create data loaders
-# train_dataloader, test_dataloader, class_names = data_setup.create_dataloaders(
-#     train_dir=train_dir,
-#     test_dir=test_dir,
-#     transform=manual_transforms, # use manually created transforms
-#     batch_size=32
-# )
 
 # Setup dirs
 train_dir = image_path / "train"
@@ -105,6 +91,9 @@ summary(model,
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
+# Set number of epochs
+NUM_EPOCHS = 5
+
 summarywriter = create_writer.create_writer("Food101",
                                             "Pretrained Model EfficientNet_B0")
 results = engine.train(model=model,
@@ -112,7 +101,7 @@ results = engine.train(model=model,
                        test_dataloader=test_dataloader,
                        optimizer=optimizer,
                        loss_fn=loss_fn,
-                       epochs=5,
+                       epochs=NUM_EPOCHS,
                        device=device,
                        writer=summarywriter,
                        img_height=224,
@@ -121,3 +110,22 @@ results = engine.train(model=model,
 helper_functions.plot_loss_curves(results=results)
 plt.show()
 
+# Setup custom image path
+data_path = Path("data/")
+custom_image_path = data_path / "04-pizza-dad.jpeg"
+
+# Download the image if it doesn't already exist
+if not custom_image_path.is_file():
+    with open(custom_image_path, "wb") as f:
+        # When downloading from GitHub, need to use the "raw" file link
+        request = requests.get("https://raw.githubusercontent.com/mrdbourke/pytorch-deep-learning/main/images/04-pizza-dad.jpeg")
+        print(f"Downloading {custom_image_path}...")
+        f.write(request.content)
+else:
+    print(f"{custom_image_path} already exists, skipping download.")
+
+# Predict on custom image
+helper_functions.pred_and_plot_image(model=model,
+                    image_path=custom_image_path,
+                    class_names=class_names)
+plt.show()
