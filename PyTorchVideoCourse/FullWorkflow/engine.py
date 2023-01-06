@@ -115,7 +115,9 @@ def train(model: torch.nn.Module,
           loss_fn: torch.nn.Module,
           epochs: int,
           device: torch.device,
-          writer: torch.utils.tensorboard.writer.SummaryWriter) -> Dict[str, List]:
+          writer: torch.utils.tensorboard.writer.SummaryWriter,
+          img_width: int,
+          img_height: int) -> Dict[str, List]:
     """Trains and tests a PyTorch model.
     Passes a target PyTorch models through train_step() and test_step()
     functions for a number of epochs, training and testing the model
@@ -193,8 +195,11 @@ def train(model: torch.nn.Module,
                                                 "test_acc": test_acc},
                                                 global_step=epoch)
 
+            # writer.add_graph(model=model,
+            #                  input_to_model=torch.randn(32,3,224,244).to(device=device))
+
             writer.add_graph(model=model,
-                             input_to_model=torch.randn(32,3,224,244).to(device=device))
+                             input_to_model=torch.randn(32,3,img_width,img_height).to(device=device))
 
             # Close Writer
             writer.close()

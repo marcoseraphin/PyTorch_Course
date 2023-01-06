@@ -3,6 +3,7 @@ import set_seed
 import download_data
 import data_setup
 import torchvision
+import matplotlib.pyplot as plt
 from torchvision import transforms
 from torch import nn
 from torchinfo import summary
@@ -12,7 +13,7 @@ device = "mps" if torch.backends.mps.is_available() else "cpu"
 print(f"Using device: {device}")
 
 # Load data
-image_path = download_data.download_data(source="https://github.com/mrdbourke/pytorch-deep-learning/raw/main/data/pizza_steak_sushi.zip",
+image_path = download_data.download_data(source="https://github.com/marcoseraphin/PyTorch_Course/raw/main/PyTorchVideoCourse/ZipData/pizza_steak_sushi.zip",
                                          destination="pizza_steak_sushi")
 
 # Setup directory paths to train and test images
@@ -39,3 +40,15 @@ train_dataloader, test_dataloader, class_names = data_setup.create_dataloaders(
     transform=manual_transforms, # use manually created transforms
     batch_size=BATCH_SIZE
 )
+
+# Get a batch of images
+image_batch, label_batch = next(iter(train_dataloader))
+
+# Get a single image from the batch
+image, label = image_batch[0], label_batch[0]
+
+# Plot image with matplotlib
+plt.imshow(image.permute(1, 2, 0)) # rearrange image dimensions to suit matplotlib [color_channels, height, width] -> [height, width, color_channels]
+plt.title(class_names[label])
+plt.axis(False)
+plt.show()
