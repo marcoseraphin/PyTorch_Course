@@ -113,6 +113,7 @@ plt.show()
 # Setup custom image path
 data_path = Path("data/")
 custom_image_path = data_path / "SampleTestSushi.jpeg"
+# custom_image_path = data_path / "SampleTestPizza.jpeg"
 
 # Download the image if it doesn't already exist
 if not custom_image_path.is_file():
