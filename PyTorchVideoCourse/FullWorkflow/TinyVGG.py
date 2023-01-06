@@ -47,6 +47,8 @@ class TinyVGG(nn.Module):
             nn.Flatten(),
             # Where did this in_features shape come from? 
             # It's because each layer of our network compresses and changes the shape of our inputs data.
+            # nn.Linear(in_features=hidden_units*53*53,
+            #           out_features=output_shape)
             nn.Linear(in_features=hidden_units*13*13,
                       out_features=output_shape)
         )
@@ -55,9 +57,9 @@ class TinyVGG(nn.Module):
         x = self.conv_block_1(x)
         # print(x.shape)
         x = self.conv_block_2(x)
-        # print(x.shape)
+        #print(x.shape)
         x = self.classifier(x)
-        # print(x.shape)
+        #print(x.shape)
         return x
         # return self.classifier(self.conv_block_2(self.conv_block_1(x))) # <- leverage the benefits of operator fusion
 
@@ -158,9 +160,9 @@ custom_image = torchvision.io.read_image(str(custom_image_path)).type(torch.floa
 custom_image = custom_image / 255. 
 
 # Print out image data
-print(f"Custom image tensor:\n{custom_image}\n")
-print(f"Custom image shape: {custom_image.shape}\n")
-print(f"Custom image dtype: {custom_image.dtype}")
+# print(f"Custom image tensor:\n{custom_image}\n")
+# print(f"Custom image shape: {custom_image.shape}\n")
+# print(f"Custom image dtype: {custom_image.dtype}")
 
 # Plot custom image
 # plt.imshow(custom_image.permute(1, 2, 0)) # need to permute image dimensions from CHW -> HWC otherwise matplotlib will error
