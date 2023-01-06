@@ -70,14 +70,6 @@ for param in model.features.parameters():
 # let's set the seeds
 set_seed.set_seeds(seed=42)
 
-# Update the classifier head to suit our problem
-model.classifier = torch.nn.Sequential(nn.Dropout(p=0.2, inplace=True),
-                                       nn.Linear(in_features=1280, 
-                                                 out_features=len(class_names),
-                                                 bias=True).to(device))
-
-
-
 # Get a summary of the model (uncomment for full output)
 summary(model, 
         input_size=(32, 3, 224, 224), # make sure this is "input_size", not "input_shape" (batch_size, color_channels, height, width)
@@ -87,12 +79,20 @@ summary(model,
         row_settings=["var_names"]
 )
 
+# Update the classifier head to suit our problem
+model.classifier = torch.nn.Sequential(nn.Dropout(p=0.2, inplace=True),
+                                       #nn.Linear(in_features=1408,  #  for efficientnet_b2 
+                                       nn.Linear(in_features=1280, 
+                                                 out_features=len(class_names),
+                                                 bias=True).to(device))
+
+
 # Define loss and optimizer
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # Set number of epochs
-NUM_EPOCHS = 5
+NUM_EPOCHS = 15
 
 summarywriter = create_writer.create_writer("Food101",
                                             "Pretrained Model EfficientNet_B0")
@@ -112,13 +112,13 @@ plt.show()
 
 # Setup custom image path
 data_path = Path("data/")
-custom_image_path = data_path / "04-pizza-dad.jpeg"
+custom_image_path = data_path / "SampleTestPizza.jpeg"
 
 # Download the image if it doesn't already exist
 if not custom_image_path.is_file():
     with open(custom_image_path, "wb") as f:
         # When downloading from GitHub, need to use the "raw" file link
-        request = requests.get("https://raw.githubusercontent.com/mrdbourke/pytorch-deep-learning/main/images/04-pizza-dad.jpeg")
+        request = requests.get("https://raw.githubusercontent.com/marcoseraphin/PyTorch_Course/main/PyTorchVideoCourse/ZipData/SampleTestPizza.jpeg")
         print(f"Downloading {custom_image_path}...")
         f.write(request.content)
 else:
@@ -129,3 +129,4 @@ helper_functions.pred_and_plot_image(model=model,
                     image_path=custom_image_path,
                     class_names=class_names)
 plt.show()
+

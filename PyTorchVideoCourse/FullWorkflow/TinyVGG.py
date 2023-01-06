@@ -140,13 +140,13 @@ plt.show()
 data_path = Path("data")
 
 # Setup custom image path
-custom_image_path = data_path / "04-pizza-dad.jpeg"
+custom_image_path = data_path / "SampleTestPizza.jpeg"
 
 # Download the image if it doesn't already exist
 if not custom_image_path.is_file():
     with open(custom_image_path, "wb") as f:
         # When downloading from GitHub, need to use the "raw" file link
-        request = requests.get("https://raw.githubusercontent.com/mrdbourke/pytorch-deep-learning/main/images/04-pizza-dad.jpeg")
+        request = requests.get("https://raw.githubusercontent.com/marcoseraphin/PyTorch_Course/main/PyTorchVideoCourse/ZipData/SampleTestPizza.jpeg")
         print(f"Downloading {custom_image_path}...")
         f.write(request.content)
 else:
