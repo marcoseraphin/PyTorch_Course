@@ -83,6 +83,7 @@ utils.save_model(model=effnetb2_model,
                  target_dir="models",
                  model_name="09_pretrained_effnetb2_feature_extractor_pizza_steak_sushi.pth")
 
+
 # Get the model size in bytes then convert to megabytes
 pretrained_effnetb2_model_size = Path("models/09_pretrained_effnetb2_feature_extractor_pizza_steak_sushi.pth").stat().st_size // (1024*1024) # division converts bytes to megabytes (roughly) 
 print(f"Pretrained EffNetB2 feature extractor model size: {pretrained_effnetb2_model_size} MB")
