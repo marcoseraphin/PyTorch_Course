@@ -10,6 +10,8 @@ from torchinfo import summary
 import matplotlib.pyplot as plt
 from pathlib import Path
 from torch import nn
+import shutil
+from pathlib import Path
 import random
 import os
 from PIL import Image
@@ -173,20 +175,74 @@ print(f"example_list: {example_list}")
 # -------------------------------
 
 # Create title, description and article strings
-title = "FoodVision Mini 🍕🥩🍣"
-description = "An EfficientNetB2 feature extractor computer vision model to classify images of food as pizza, steak or sushi."
-article = "Created at [09. PyTorch Model Deployment](https://www.learnpytorch.io/09_pytorch_model_deployment/)."
+# title = "FoodVision Mini 🍕🥩🍣"
+# description = "An EfficientNetB2 feature extractor computer vision model to classify images of food as pizza, steak or sushi."
+# article = "Created at [09. PyTorch Model Deployment](https://www.learnpytorch.io/09_pytorch_model_deployment/)."
 
-# Create the Gradio demo
-demo = gr.Interface(fn=predict, # mapping function from input to output
-                    inputs=gr.Image(type="pil"), # what are the inputs?
-                    outputs=[gr.Label(num_top_classes=3, label="Predictions"), # what are the outputs?
-                             gr.Number(label="Prediction time (s)")], # our fn has two outputs, therefore we have two outputs
-                    examples=example_list, 
-                    title=title,
-                    description=description,
-                    article=article)
+# # Create the Gradio demo
+# demo = gr.Interface(fn=predict, # mapping function from input to output
+#                     inputs=gr.Image(type="pil"), # what are the inputs?
+#                     outputs=[gr.Label(num_top_classes=3, label="Predictions"), # what are the outputs?
+#                              gr.Number(label="Prediction time (s)")], # our fn has two outputs, therefore we have two outputs
+#                     examples=example_list, 
+#                     title=title,
+#                     description=description,
+#                     article=article)
 
-# Launch the demo!
-demo.launch(debug=False, # print errors locally?
-            share=True) # generate a publically shareable URL?
+# # Launch the demo!
+# demo.launch(debug=False, # print errors locally?
+#             share=True) # generate a publically shareable URL?
+
+
+# Create FoodVision mini demo path
+foodvision_mini_demo_path = Path("gradio_demo/foodvision_mini/")
+
+# Remove files that might already exist there and create new directory
+if foodvision_mini_demo_path.exists():
+    shutil.rmtree(foodvision_mini_demo_path)
+    foodvision_mini_demo_path.mkdir(parents=True, # make the parent folders?
+                                    exist_ok=True) # create it even if it already exists?
+else:
+    # If the file doesn't exist, create it anyway
+    foodvision_mini_demo_path.mkdir(parents=True, 
+                                    exist_ok=True)
+    
+# 1. Create an examples directory
+foodvision_mini_examples_path = foodvision_mini_demo_path / "examples"
+foodvision_mini_examples_path.mkdir(parents=True, exist_ok=True)
+
+# 2. Collect three random test dataset image paths
+foodvision_mini_examples = [Path('data/pizza_steak_sushi/test/sushi/2190404.jpg'),
+                            Path('data/pizza_steak_sushi/test/steak/3424937.jpg'),
+                            Path('data/pizza_steak_sushi/test/pizza/1925494.jpg')]
+
+# 3. Copy the three random images to the examples directory
+for example in foodvision_mini_examples:
+    destination = foodvision_mini_examples_path / example.name
+    print(f"[INFO] Copying {example} to {destination}")
+    shutil.copy2(src=example, dst=destination)
+
+# Get example filepaths in a list of lists
+example_list = [["examples/" + example] for example in os.listdir(foodvision_mini_examples_path)]
+
+
+# Create a source path for our target model
+effnetb2_foodvision_mini_model_path = "models/09_pretrained_effnetb2_feature_extractor_pizza_steak_sushi.pth"
+
+# Create a destination path for our target model 
+effnetb2_foodvision_mini_model_destination = foodvision_mini_demo_path / effnetb2_foodvision_mini_model_path.split("/")[1]
+
+# Try to move the file
+try:
+    print(f"[INFO] Attempting to move {effnetb2_foodvision_mini_model_path} to {effnetb2_foodvision_mini_model_destination}")
+    
+    # Move the model
+    shutil.move(src=effnetb2_foodvision_mini_model_path, 
+                dst=effnetb2_foodvision_mini_model_destination)
+    
+    print(f"[INFO] Model move complete.")
+
+# If the model has already been moved, check if it exists
+except:
+    print(f"[INFO] No model found at {effnetb2_foodvision_mini_model_path}, perhaps its already been moved?")
+    print(f"[INFO] Model exists at {effnetb2_foodvision_mini_model_destination}: {effnetb2_foodvision_mini_model_destination.exists()}")

@@ -1,10 +1,12 @@
 import torch
 import numpy as np
 import pandas as pd
+import torchvision
 import sklearn
 import matplotlib.pyplot as plt
 
 print(f"PyTorch version: {torch.__version__}")
+print(f"Torchvision version: {torchvision.__version__}")
 
 # Check PyTorch has access to MPS (Metal Performance Shader, Apple's GPU architecture)
 print(f"Is MPS (Metal Performance Shader) built? {torch.backends.mps.is_built()}")
