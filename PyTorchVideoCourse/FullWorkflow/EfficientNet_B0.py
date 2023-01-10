@@ -4,13 +4,18 @@ import download_data
 import data_setup
 import torchvision
 import engine
+import utils
 import requests
+import random
 import helper_functions
 import create_writer
+import coremltools as ct
 from pathlib import Path
+#import onnx_coreml
 import matplotlib.pyplot as plt
 from torchvision import transforms
 from torch import nn
+from PIL import Image
 from torchinfo import summary
 
 # Set the device      
@@ -28,10 +33,6 @@ test_dir = image_path / "test"
 # Setup ImageNet normalization levels (turns all images into similar distribution as ImageNet)
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
-
-# Setup dirs
-train_dir = image_path / "train"
-test_dir = image_path / "test"
 
 # Setup pretrained weights (plenty of these available in torchvision.models)
 weights = torchvision.models.EfficientNet_B2_Weights.DEFAULT
@@ -132,3 +133,67 @@ helper_functions.pred_and_plot_image(model=model,
                     class_names=class_names)
 plt.show()
 
+
+# ONNX EXPORT
+# -----------
+
+# Save the network weights
+# torch.save(model.state_dict(),
+#            'pretrained_effnetb2_feature_extractor_mlcore.pth')
+
+# # Create dummy input
+# dummy_input = torch.rand(1, 3, 224, 224)
+
+# # Define input / output names
+# input_names = ["input"]
+# output_names = ["output"]
+
+# # Convert the PyTorch model to ONNX
+# torch.onnx.export(model,
+#                   dummy_input,
+#                   "pretrained_effnetb2_feature_extractor_mlcore.onnx",
+#                   verbose=True,
+#                   input_names=input_names,
+#                   output_names=output_names)
+
+
+# # Load the ONNX model as a CoreML model
+# model = onnx_coreml.convert(model='pretrained_effnetb2_feature_extractor_mlcore.onnx')
+
+# # Save the CoreML model
+# model.save('pretrained_effnetb2_feature_extractor_mlcore.mlmodel')
+
+# CoreML Export
+
+# Create dummy input
+dummy_input = torch.rand(1, 3, 224, 224)
+
+scripted_model = torch.jit.trace(model, dummy_input)
+
+# mlmodel =ct.convert(scripted_model,
+#     inputs=[ct.TensorType(name="test", shape=dummy_input.shape)],
+#     source='auto',
+#     minimum_deployment_target=ct.target.iOS15,
+#     compute_units=ct.ComputeUnit.CPU_ONLY,
+#     compute_precision=ct.precision.FLOAT32,
+#     convert_to='mlprogram',
+#     debug=True
+# )
+
+#  # Save the converted model.
+# mlmodel.save('foodvisionmodel.mlpackage')
+
+# Using image_input in the inputs parameter:
+# Convert to Core ML neural network using the Unified Conversion API.
+model2 = ct.convert(
+    scripted_model,
+    inputs=[ct.TensorType(shape=dummy_input.shape)]
+ )
+
+# Save the converted model.
+model2.save("foodvisionmodel.mlmodel")
+
+mlmodel_loaded= ct.models.MLModel('foodvisionmodel.mlmodel')
+
+# Display its specifications
+#print(mlmodel_loaded.visualize_spec)
