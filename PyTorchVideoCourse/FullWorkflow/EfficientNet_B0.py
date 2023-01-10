@@ -34,7 +34,7 @@ train_dir = image_path / "train"
 test_dir = image_path / "test"
 
 # Setup pretrained weights (plenty of these available in torchvision.models)
-weights = torchvision.models.EfficientNet_B0_Weights.DEFAULT
+weights = torchvision.models.EfficientNet_B2_Weights.DEFAULT
 
 # Get transforms from weights (these are the transforms that were used to obtain the weights)
 automatic_transforms = weights.transforms() 
@@ -53,11 +53,11 @@ print(f"classes: {class_names}")
 # Note: This is how a pretrained model would be created in torchvision > 0.13, it will be deprecated in future versions.
 # model = torchvision.models.efficientnet_b0(pretrained=True).to(device) # OLD 
 
-# Download the pretrained weights for EfficientNet_B0
-weights = torchvision.models.EfficientNet_B0_Weights.DEFAULT # NEW in torchvision 0.13, "DEFAULT" means "best weights available"
+# Download the pretrained weights for EfficientNet_B2
+weights = torchvision.models.EfficientNet_B2_Weights.DEFAULT # NEW in torchvision 0.13, "DEFAULT" means "best weights available"
 
 # Setup the model with the pretrained weights and send it to the target device
-model = torchvision.models.efficientnet_b0(weights=weights).to(device)
+model = torchvision.models.efficientnet_b2(weights=weights).to(device)
 
 # View the output of the model
 # model
@@ -81,8 +81,8 @@ summary(model,
 
 # Update the classifier head to suit our problem
 model.classifier = torch.nn.Sequential(nn.Dropout(p=0.2, inplace=True),
-                                       #nn.Linear(in_features=1408,  #  for efficientnet_b2 
-                                       nn.Linear(in_features=1280, 
+                                       nn.Linear(in_features=1408,  #  for efficientnet_b2 
+                                       #nn.Linear(in_features=1280, #  for efficientnet_b0 
                                                  out_features=len(class_names),
                                                  bias=True).to(device))
 
@@ -92,10 +92,10 @@ loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # Set number of epochs
-NUM_EPOCHS = 15
+NUM_EPOCHS = 10
 
 summarywriter = create_writer.create_writer("Food101",
-                                            "Pretrained Model EfficientNet_B0")
+                                            "Pretrained Model EfficientNet_B2")
 results = engine.train(model=model,
                        train_dataloader=train_dataloader,
                        test_dataloader=test_dataloader,
