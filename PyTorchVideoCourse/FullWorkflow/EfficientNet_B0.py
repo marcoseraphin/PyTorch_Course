@@ -185,15 +185,28 @@ scripted_model = torch.jit.trace(model, dummy_input)
 
 # Using image_input in the inputs parameter:
 # Convert to Core ML neural network using the Unified Conversion API.
+# model2 = ct.convert(
+#     scripted_model,
+#     inputs=[ct.TensorType(shape=dummy_input.shape)]
+#  )
+
 model2 = ct.convert(
     scripted_model,
-    inputs=[ct.TensorType(shape=dummy_input.shape)]
+    inputs=[ct.ImageType(shape=(1,3,224,244))]
  )
+
 
 # Save the converted model.
 model2.save("foodvisionmodel.mlmodel")
 
 mlmodel_loaded= ct.models.MLModel('foodvisionmodel.mlmodel')
+
+example_image = Image.open(custom_image_path).resize((224, 224))
+
+# Make a prediction using Core ML.
+#out_dict = model2.predict({input_name: example_image})
+
+x = 12
 
 # Display its specifications
 #print(mlmodel_loaded.visualize_spec)
