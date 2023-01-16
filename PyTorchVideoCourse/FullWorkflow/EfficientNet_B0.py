@@ -93,7 +93,7 @@ loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # Set number of epochs
-NUM_EPOCHS = 10
+NUM_EPOCHS = 2
 
 summarywriter = create_writer.create_writer("Food101",
                                             "Pretrained Model EfficientNet_B2")
@@ -190,11 +190,37 @@ scripted_model = torch.jit.trace(model, dummy_input)
 #     inputs=[ct.TensorType(shape=dummy_input.shape)]
 #  )
 
+# 1. Load in image and convert the tensor values to float32
+target_image = torchvision.io.read_image(str(custom_image_path)).type(torch.float32)
+
+# 2. Divide the image pixel values by 255 to get them between [0, 1]
+target_image = target_image / 255.0
+
+# 4. Make sure the model is on the target device
+model.to(device)
+
+# 5. Turn on model evaluation mode and inference mode
+model.eval()
+with torch.inference_mode():
+    # Add an extra dimension to the image
+    target_image = target_image.unsqueeze(dim=0)
+
+    # Make a prediction on image with an extra dimension and send it to the target device
+    target_image_pred = model(target_image.to(device))
+
+# 6. Convert logits -> prediction probabilities (using torch.softmax() for multi-class classification)
+target_image_pred_probs = torch.softmax(target_image_pred, dim=1)
+
+
+
+
 model2 = ct.convert(
     scripted_model,
-    inputs=[ct.ImageType(shape=(1,3,224,244))]
- )
+    inputs=[ct.ImageType(shape=(1,3,224,244))])
 
+# Set the input type as an image
+#model2.input_description['InputImage'] = ('image', (3, 224, 224))
+#model2.output_description['Output'] = ('tensor', (1, 1, 1))
 
 # Save the converted model.
 model2.save("foodvisionmodel.mlmodel")
@@ -206,7 +232,6 @@ example_image = Image.open(custom_image_path).resize((224, 224))
 # Make a prediction using Core ML.
 #out_dict = model2.predict({input_name: example_image})
 
-x = 12
-
 # Display its specifications
 #print(mlmodel_loaded.visualize_spec)
+
