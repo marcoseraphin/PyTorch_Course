@@ -111,6 +111,7 @@ pretrained_vit_results = engine.train(model=pretrained_vit,
                                       writer=summarywriter)
                                     
 helper_functions.plot_loss_curves(pretrained_vit_results)
+plt.show()
 
 utils.save_model(model=pretrained_vit,
                  target_dir="models",
@@ -133,7 +134,14 @@ if not custom_image_path.is_file():
 else:
     print(f"{custom_image_path} already exists, skipping download.")
 
+
+custom_image_transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+])
+
 # Predict on custom image
 helper_functions.pred_and_plot_image(model=pretrained_vit,
                                      image_path=custom_image_path,
-                                     class_names=class_names)
+                                     class_names=class_names,
+                                     transform=custom_image_transform)
+plt.show()
