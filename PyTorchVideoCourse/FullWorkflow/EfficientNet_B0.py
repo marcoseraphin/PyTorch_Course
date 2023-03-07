@@ -214,20 +214,20 @@ target_image_pred_probs = torch.softmax(target_image_pred, dim=1)
 
 
 
-model2 = ct.convert(
-    scripted_model,
-    inputs=[ct.ImageType(shape=(1,3,224,244))])
+# model2 = ct.convert(
+#     scripted_model,
+#     inputs=[ct.ImageType(shape=(1,3,224,244))])
 
 # Set the input type as an image
-#model2.input_description['InputImage'] = ('image', (3, 224, 224))
-#model2.output_description['Output'] = ('tensor', (1, 1, 1))
+# model2.input_description['InputImage'] = ('image', (3, 224, 224))
+#model2.output_description[0] = ('tensor', (1, 1, 1))
 
 # Save the converted model.
-model2.save("foodvisionmodel.mlmodel")
+#model2.save("foodvisionmodel.mlmodel")
 
-mlmodel_loaded= ct.models.MLModel('foodvisionmodel.mlmodel')
+#mlmodel_loaded= ct.models.MLModel('foodvisionmodel.mlmodel')
 
-example_image = Image.open(custom_image_path).resize((224, 224))
+#example_image = Image.open(custom_image_path).resize((224, 224))
 
 # Make a prediction using Core ML.
 #out_dict = model2.predict({input_name: example_image})
@@ -235,3 +235,37 @@ example_image = Image.open(custom_image_path).resize((224, 224))
 # Display its specifications
 #print(mlmodel_loaded.visualize_spec)
 
+# get model specification
+# model_path = "foodvisionmodel.mlmodel"
+# mlmodel = ct.models.MLModel(str(model_path))
+# spec = mlmodel.get_spec()
+
+# # get list of current output_names
+# current_output_names = len(mlmodel.output_description._fd_spec)
+
+# # rename first output in list to new_output_name
+# old_name = current_output_names[0].name
+# new_name = "output"
+# ct.utils.rename_feature(
+#     spec, old_name, new_name, rename_outputs=True
+# )
+
+# # overwite existing model spec with new renamed spec
+# new_model = ct.models.MLModel(spec)
+# new_model.save(model_path)
+
+example = torch.rand(1,3,224,244)
+model_cpu = model.to("cpu")
+
+traced_model = torch.jit.trace(model_cpu, example)
+
+from torch.utils.mobile_optimizer import optimize_for_mobile
+
+optimized_model = optimize_for_mobile(traced_model)
+
+model2 = ct.convert(
+    optimized_model,
+    inputs=[ct.ImageType(shape=(1,3,224,244))])
+
+# Save the converted model.
+model2.save("foodvisionmodel.mlmodel")
