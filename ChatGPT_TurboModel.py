@@ -1,6 +1,9 @@
 import os
 import openai
+import gradio as gr
 from dotenv import load_dotenv
+
+# SEE: https://www.youtube.com/watch?v=0l4UDn1p7gM
 
 load_dotenv('TOKEN.env')  # take environment variables from .env.
 
